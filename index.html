@@ -286,39 +286,51 @@
         }
 
         async function getQuotaAndFee(f, t, id, symbol, boxId) {
-            const box = document.getElementById(boxId);
-            box.classList.remove('hidden');
+            if (boxId) {
+                const box = document.getElementById(boxId);
+                box.classList.remove('hidden');
 
-            const fields = ['min', 'max', 'net', 'ops'];
-            fields.forEach(fld => {
-                const el = document.getElementById(`${fld}_${id}`);
-                if(el) el.innerText = "加载中...";
-            });
+                const fields = ['min', 'max', 'net', 'ops'];
+                fields.forEach(fld => {
+                    const el = document.getElementById(`${fld}_${id}`);
+                    if(el) el.innerText = "加载中...";
+                });
+            }
 
             try {
                 const url = `${baseUrl}quotaAndFee?fromChainType=${f}&toChainType=${t}&tokenPairID=${id}&symbol=${symbol}`;
                 const res = await fetch(url).then(r => r.json());
                 const d = res.data;
 
-                // 填充 Quota
-                document.getElementById(`min_${id}`).innerText = d.minQuota || "0";
-                document.getElementById(`max_${id}`).innerText = d.maxQuota || "无上限";
-
-                // 填充 Network Fee
                 const netV = typeof d.networkFee === 'object' ? d.networkFee.value : d.networkFee;
-                document.getElementById(`net_${id}`).innerText = netV;
-                document.getElementById(`netType_${id}`).innerHTML = d.networkFee.isPercent ? '<span class="badge-pct">百分比</span>' : '';
+                const selectedPair = selectedPairsData.find(p => p.tokenPairID === id);
+                if (selectedPair) {
+                    selectedPair.network_fee = netV;
+                    renderSelectedPairs();
+                }
 
-                // 填充 Operation Fee
-                const opsV = typeof d.operationFee === 'object' ? d.operationFee.value : d.operationFee;
-                document.getElementById(`ops_${id}`).innerText = opsV;
-                document.getElementById(`opsType_${id}`).innerHTML = d.operationFee.isPercent ? '<span class="badge-pct">百分比</span>' : '';
-
+                if (boxId) {
+                    document.getElementById(`min_${id}`).innerText = d.minQuota || "0";
+                    document.getElementById(`max_${id}`).innerText = d.maxQuota || "无上限";
+                    document.getElementById(`net_${id}`).innerText = netV;
+                    document.getElementById(`netType_${id}`).innerHTML = d.networkFee.isPercent ? '<span class="badge-pct">百分比</span>' : '';
+                    const opsV = typeof d.operationFee === 'object' ? d.operationFee.value : d.operationFee;
+                    document.getElementById(`ops_${id}`).innerText = opsV;
+                    document.getElementById(`opsType_${id}`).innerHTML = d.operationFee.isPercent ? '<span class="badge-pct">百分比</span>' : '';
+                }
             } catch (e) {
-                fields.forEach(fld => {
-                    const el = document.getElementById(`${fld}_${id}`);
-                    if(el) el.innerText = "Error";
-                });
+                if (boxId) {
+                    const fields = ['min', 'max', 'net', 'ops'];
+                    fields.forEach(fld => {
+                        const el = document.getElementById(`${fld}_${id}`);
+                        if(el) el.innerText = "Error";
+                    });
+                }
+                const selectedPair = selectedPairsData.find(p => p.tokenPairID === id);
+                if (selectedPair) {
+                    selectedPair.network_fee = 'Error';
+                    renderSelectedPairs();
+                }
             }
         }
 
@@ -350,17 +362,21 @@
         function addPairToSelection(pair) {
             if (pair) {
                 if (!selectedPairsData.some(p => p.tokenPairID === pair.tokenPairID)) {
+                    const pairToAdd = { ...pair, network_fee: 'Loading...' };
+
                     if (swapped) {
                         const swappedPair = {
-                            ...pair,
+                            ...pairToAdd,
                             fromChain: pair.toChain,
                             toChain: pair.fromChain,
                             fromToken: pair.toToken,
                             toToken: pair.fromToken
                         };
                         selectedPairsData.push(swappedPair);
+                        getQuotaAndFee(swappedPair.fromChain.chainType, swappedPair.toChain.chainType, swappedPair.tokenPairID, swappedPair.symbol);
                     } else {
-                        selectedPairsData.push(pair);
+                        selectedPairsData.push(pairToAdd);
+                        getQuotaAndFee(pairToAdd.fromChain.chainType, pairToAdd.toChain.chainType, pairToAdd.tokenPairID, pairToAdd.symbol);
                     }
                     renderSelectedPairs();
                 } else {
@@ -406,13 +422,8 @@
                     token_pair: `${p.fromChain.chainName} ➔ ${p.toChain.chainName}`,
                     tokenid: p.tokenPairID,
                     tokendecimals: p.fromToken.decimals,
-                    network_fee: '' // Placeholder for network fee
+                    network_fee: p.network_fee || ''
                 };
-
-                const netFeeEl = document.getElementById(`net_${p.tokenPairID}`);
-                if (netFeeEl && netFeeEl.innerText !== '--' && netFeeEl.innerText !== '加载中...' && netFeeEl.innerText !== 'Error') {
-                    row.network_fee = netFeeEl.innerText;
-                }
 
                 tableHTML += '<tr>';
                 csvHeaders.forEach(header => {
@@ -465,16 +476,14 @@
                     token_pair: `${p.fromChain.chainName} ➔ ${p.toChain.chainName}`,
                     tokenid: p.tokenPairID,
                     tokendecimals: p.fromToken.decimals,
-                    network_fee: '' // Placeholder for network fee
+                    network_fee: p.network_fee || ''
                 };
 
-                const netFeeEl = document.getElementById(`net_${p.tokenPairID}`);
-                if (netFeeEl && netFeeEl.innerText !== '--' && netFeeEl.innerText !== '加载中...' && netFeeEl.innerText !== 'Error') {
-                    row.network_fee = netFeeEl.innerText;
-                }
-
                 let rowData = csvHeaders.map(header => {
-                    return row[header] || '';
+                    const value = row[header] || '';
+                    // Escape commas and quotes for CSV
+                    const escapedValue = ('' + value).replace(/"/g, '""');
+                    return `"${escapedValue}"`;
                 });
                 csvContent += rowData.join(",") + "\n";
             });
@@ -485,6 +494,7 @@
             link.setAttribute("download", "token_pairs.csv");
             document.body.appendChild(link);
             link.click();
+            document.body.removeChild(link);
         }
 
         function toggleTool() { document.getElementById('hexTool').classList.toggle('hidden'); }
