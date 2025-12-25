@@ -19,11 +19,16 @@
         .json-block { background: #1e293b; color: #94a3b8; border-radius: 12px; padding: 20px; font-size: 13px; line-height: 1.6; overflow-x: auto; }
         .result-card { background: white; border-radius: 24px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); margin-bottom: 24px; }
         .badge-pct { background: #e0e7ff; color: #4338ca; font-size: 10px; padding: 2px 6px; border-radius: 6px; font-weight: 800; margin-left: 4px; vertical-align: middle; }
+        .header-pill { background-color: #e0e7ff; color: #4338ca; padding: 4px 8px; border-radius: 8px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; margin-right: 8px; margin-bottom: 8px; }
+        .header-pill button { margin-left: 8px; background: none; border: none; cursor: pointer; color: #4338ca; font-weight: 800; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 8px; border: 1px solid #e2e8f0; text-align: left; }
+        th { background-color: #f1f5f9; }
     </style>
 </head>
 <body class="p-4 md:p-8">
 
-    <div class="max-w-4xl mx-auto">
+    <div class="max-w-7xl mx-auto">
         <header class="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
             <h1 class="text-3xl font-black tracking-tight">WAN BRIDGE <span class="text-indigo-600">HUB</span></h1>
             <div class="bg-white border-2 border-slate-200 p-1 rounded-2xl flex shadow-sm">
@@ -32,60 +37,70 @@
             </div>
         </header>
 
-        <section class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 mb-10">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="suggest-container">
-                    <label class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1">Asset 资产</label>
-                    <input type="text" id="assetIn" autocomplete="off" placeholder="例如: BTC" class="input-pill w-full" oninput="showSuggestions('assetIn', 'assetSuggest', 'asset')">
-                    <div id="assetSuggest" class="suggest-list"></div>
-                </div>
-                <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 items-end">
-                    <div class="suggest-container">
-                        <label class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1">Network A 链</label>
-                        <input type="text" id="chainA" autocomplete="off" placeholder="例如: BSC" class="input-pill w-full" oninput="showSuggestions('chainA', 'chainASuggest', 'chain')">
-                        <div id="chainASuggest" class="suggest-list"></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+                <section class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 mb-10">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="suggest-container">
+                            <label class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1">Asset 资产</label>
+                            <input type="text" id="assetIn" autocomplete="off" placeholder="例如: BTC" class="input-pill w-full" oninput="showSuggestions('assetIn', 'assetSuggest', 'asset')">
+                            <div id="assetSuggest" class="suggest-list"></div>
+                        </div>
+                        <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 items-end">
+                            <div class="suggest-container">
+                                <label class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1">Network A 链</label>
+                                <input type="text" id="chainA" autocomplete="off" placeholder="例如: BSC" class="input-pill w-full" oninput="showSuggestions('chainA', 'chainASuggest', 'chain')">
+                                <div id="chainASuggest" class="suggest-list"></div>
+                            </div>
+                            <button onclick="swapNetworks()" class="w-12 h-12 flex items-center justify-center bg-slate-100 hover:bg-slate-200 rounded-full transition mb-1">
+                                <svg class="w-6 h-6 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                            </button>
+                            <div class="suggest-container">
+                                <label class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1">Network B 链</label>
+                                <input type="text" id="chainB" autocomplete="off" placeholder="例如: Cardano" class="input-pill w-full" oninput="showSuggestions('chainB', 'chainBSuggest', 'chain')">
+                                <div id="chainBSuggest" class="suggest-list"></div>
+                            </div>
+                        </div>
                     </div>
-                    <button onclick="swapNetworks()" class="w-12 h-12 flex items-center justify-center bg-slate-100 hover:bg-slate-200 rounded-full transition mb-1">
-                        <svg class="w-6 h-6 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
-                    </button>
-                    <div class="suggest-container">
-                        <label class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1">Network B 链</label>
-                        <input type="text" id="chainB" autocomplete="off" placeholder="例如: Cardano" class="input-pill w-full" oninput="showSuggestions('chainB', 'chainBSuggest', 'chain')">
-                        <div id="chainBSuggest" class="suggest-list"></div>
+                    <div id="dataStatus" class="mt-6 text-sm font-medium text-slate-400 flex items-center gap-2">
+                        <span id="statusDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                        <span id="statusText">正在同步数据...</span>
                     </div>
-                </div>
+                </section>
+                <div id="resultsList" class="space-y-8"></div>
             </div>
-            <div id="dataStatus" class="mt-6 text-sm font-medium text-slate-400 flex items-center gap-2">
-                <span id="statusDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                <span id="statusText">正在同步数据...</span>
-            </div>
-        </section>
 
-        <section id="smgIDSection" class="mb-10">
-            <h2 class="text-2xl font-bold mb-4">SMG ID</h2>
-            <div id="smgIDDisplay" class="bg-white p-4 rounded-lg shadow-sm border border-slate-100">
-                <!-- SMG ID will be displayed here -->
-            </div>
-        </section>
+            <div>
+                <section id="smgIDSection" class="mb-10">
+                    <h2 class="text-2xl font-bold mb-4">SMG ID</h2>
+                    <div id="smgIDDisplay" class="bg-white p-4 rounded-lg shadow-sm border border-slate-100">
+                        <!-- SMG ID will be displayed here -->
+                    </div>
+                </section>
 
-        <section id="selectedPairsSection" class="mb-10">
-            <h2 class="text-2xl font-bold mb-4">Selected Token Pairs</h2>
-            <div id="selectedPairsList" class="bg-white p-4 rounded-lg shadow-sm border border-slate-100">
-                <!-- Selected token pairs will be displayed here -->
-            </div>
-        </section>
+                <section id="csvGenerationSection" class="mb-10">
+                    <h2 class="text-2xl font-bold mb-4">CSV Generation</h2>
+                    <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-100">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-slate-700 mb-2">CSV Headers</label>
+                            <div id="csvHeadersContainer" class="mb-2"></div>
+                            <div class="flex">
+                                <input type="text" id="newHeaderInput" class="input-pill w-full mr-2" placeholder="Add new header">
+                                <button onclick="addCsvHeader()" class="px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition">Add</button>
+                            </div>
+                        </div>
+                        <button onclick="generateCSV()" class="px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition">Generate CSV</button>
+                    </div>
+                </section>
 
-        <section id="csvGenerationSection" class="mb-10">
-            <h2 class="text-2xl font-bold mb-4">CSV Generation</h2>
-            <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-100">
-                <div class="mb-4">
-                    <label for="csvHeaders" class="block text-sm font-medium text-slate-700">CSV Headers</label>
-                    <textarea id="csvHeaders" rows="3" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
-                </div>
-                <button onclick="generateCSV()" class="px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition">Generate CSV</button>
+                <section id="selectedPairsSection" class="mb-10">
+                    <h2 class="text-2xl font-bold mb-4">Selected Token Pairs</h2>
+                    <div id="selectedPairsTableContainer" class="bg-white p-4 rounded-lg shadow-sm border border-slate-100">
+                        <!-- Selected token pairs table will be displayed here -->
+                    </div>
+                </section>
             </div>
-        </section>
-        <div id="resultsList" class="space-y-8"></div>
+        </div>
     </div>
 
     <div id="hexTool" class="fixed bottom-24 right-8 w-96 bg-white rounded-3xl shadow-2xl border border-slate-200 hidden z-50 overflow-hidden">
@@ -357,31 +372,76 @@
         }
 
         function renderSelectedPairs() {
-            const container = document.getElementById('selectedPairsList');
+            const container = document.getElementById('selectedPairsTableContainer');
             if (selectedPairsData.length === 0) {
                 container.innerHTML = '<p class="text-slate-400">No token pairs selected.</p>';
                 return;
             }
-            container.innerHTML = selectedPairsData.map(p => {
+
+            let tableHTML = '<table><thead><tr>';
+            csvHeaders.forEach(header => {
+                tableHTML += `<th>${header}</th>`;
+            });
+            tableHTML += '<th>Actions</th></tr></thead><tbody>';
+
+            let smgID = document.getElementById('smgIDDisplay').innerText;
+
+            selectedPairsData.forEach((p, index) => {
                 const name = p.symbol.length > 10 ? hexToUtf8(p.symbol) : p.symbol;
-                return `
-                    <div class="flex justify-between items-center p-2 border-b border-slate-100">
-                        <div>
-                            <span class="font-bold">${name}</span>
-                            <span class="text-sm text-slate-500 ml-2">${p.fromChain.chainName} ➔ ${p.toChain.chainName}</span>
-                        </div>
-                        <button onclick="removePairFromSelection(${p.tokenPairID})" class="px-3 py-1 bg-red-500 text-white font-bold rounded-lg hover:bg-red-600 transition text-xs">Remove</button>
-                    </div>
-                `;
-            }).join('');
+                const row = {
+                    id: index + 1,
+                    smg: smgID,
+                    token_name: name,
+                    token_pair: `${p.fromChain.chainName} ➔ ${p.toChain.chainName}`,
+                    tokenid: p.tokenPairID,
+                    tokendecimals: p.fromToken.decimals,
+                    network_fee: '' // Placeholder for network fee
+                };
+
+                const netFeeEl = document.getElementById(`net_${p.tokenPairID}`);
+                if (netFeeEl && netFeeEl.innerText !== '--' && netFeeEl.innerText !== '加载中...' && netFeeEl.innerText !== 'Error') {
+                    row.network_fee = netFeeEl.innerText;
+                }
+
+                tableHTML += '<tr>';
+                csvHeaders.forEach(header => {
+                    tableHTML += `<td>${row[header] || ''}</td>`;
+                });
+                tableHTML += `<td><button onclick="removePairFromSelection(${p.tokenPairID})" class="px-3 py-1 bg-red-500 text-white font-bold rounded-lg hover:bg-red-600 transition text-xs">Remove</button></td></tr>`;
+            });
+
+            tableHTML += '</tbody></table>';
+            container.innerHTML = tableHTML;
+        }
+
+        function addCsvHeader() {
+            const newHeaderInput = document.getElementById('newHeaderInput');
+            const newHeader = newHeaderInput.value.trim();
+            if (newHeader && !csvHeaders.includes(newHeader)) {
+                csvHeaders.push(newHeader);
+                newHeaderInput.value = '';
+                renderCsvHeaders();
+                renderSelectedPairs();
+            }
+        }
+
+        function removeCsvHeader(header) {
+            csvHeaders = csvHeaders.filter(h => h !== header);
+            renderCsvHeaders();
+            renderSelectedPairs();
+        }
+
+        function renderCsvHeaders() {
+            const container = document.getElementById('csvHeadersContainer');
+            container.innerHTML = csvHeaders.map(header => `
+                <div class="header-pill">
+                    ${header}
+                    <button onclick="removeCsvHeader('${header}')">❌</button>
+                </div>
+            `).join('');
         }
 
         function generateCSV() {
-            const customHeaders = document.getElementById('csvHeaders').value.trim();
-            if (customHeaders) {
-                csvHeaders = customHeaders.split(',').map(h => h.trim());
-            }
-
             let csvContent = "data:text/csv;charset=utf-8," + csvHeaders.join(",") + "\n";
             let smgID = document.getElementById('smgIDDisplay').innerText;
 
@@ -432,6 +492,7 @@
         document.addEventListener('click', e => { if (!e.target.closest('.suggest-container')) document.querySelectorAll('.suggest-list').forEach(el => el.style.display = 'none'); });
 
         changeEnv(false);
+        renderCsvHeaders();
     </script>
 </body>
 
