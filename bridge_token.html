@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Wanchain Bridge Explorer - Pro View</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; font-size: 15px; }
+        .mono { font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+        .input-pill { background: #fff; border: 2px solid #e2e8f0; padding: 14px 18px; border-radius: 14px; transition: all 0.2s; font-size: 16px; }
+        .input-pill:focus { border-color: #4f46e5; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); outline: none; }
+        .suggest-container { position: relative; }
+        .suggest-list { position: absolute; top: calc(100% + 5px); left: 0; right: 0; background: white; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); z-index: 100; max-height: 240px; overflow-y: auto; display: none; }
+        .suggest-item { padding: 12px 18px; cursor: pointer; font-size: 14px; transition: all 0.2s; }
+        .suggest-item:hover { background: #f1f5f9; color: #4f46e5; font-weight: 600; }
+        .fee-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px dashed #e2e8f0; }
+        .fee-item:last-child { border-bottom: none; }
+        .json-block { background: #1e293b; color: #94a3b8; border-radius: 12px; padding: 20px; font-size: 13px; line-height: 1.6; overflow-x: auto; }
+        .result-card { background: white; border-radius: 24px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); margin-bottom: 24px; }
+        .badge-pct { background: #e0e7ff; color: #4338ca; font-size: 10px; padding: 2px 6px; border-radius: 6px; font-weight: 800; margin-left: 4px; vertical-align: middle; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-4xl mx-auto">
+        <header class="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
+            <h1 class="text-3xl font-black tracking-tight">WAN BRIDGE <span class="text-indigo-600">HUB</span></h1>
+            <div class="bg-white border-2 border-slate-200 p-1 rounded-2xl flex shadow-sm">
+                <button onclick="changeEnv(false)" id="btnMain" class="px-8 py-2.5 rounded-xl text-sm font-bold transition-all">主网</button>
+                <button onclick="changeEnv(true)" id="btnTest" class="px-8 py-2.5 rounded-xl text-sm font-bold transition-all">测试网</button>
+            </div>
+        </header>
+
+        <section class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 mb-10">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="suggest-container">
+                    <label class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1">Asset 资产</label>
+                    <input type="text" id="assetIn" autocomplete="off" placeholder="例如: BTC" class="input-pill w-full" oninput="showSuggestions('assetIn', 'assetSuggest', 'asset')">
+                    <div id="assetSuggest" class="suggest-list"></div>
+                </div>
+                <div class="suggest-container">
+                    <label class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1">Network A 链</label>
+                    <input type="text" id="chainA" autocomplete="off" placeholder="例如: BSC" class="input-pill w-full" oninput="showSuggestions('chainA', 'chainASuggest', 'chain')">
+                    <div id="chainASuggest" class="suggest-list"></div>
+                </div>
+                <div class="suggest-container">
+                    <label class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1">Network B 链</label>
+                    <input type="text" id="chainB" autocomplete="off" placeholder="例如: Cardano" class="input-pill w-full" oninput="showSuggestions('chainB', 'chainBSuggest', 'chain')">
+                    <div id="chainBSuggest" class="suggest-list"></div>
+                </div>
+            </div>
+            <div id="dataStatus" class="mt-6 text-sm font-medium text-slate-400 flex items-center gap-2">
+                <span id="statusDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                <span id="statusText">正在同步数据...</span>
+            </div>
+        </section>
+
+        <div id="resultsList" class="space-y-8"></div>
+    </div>
+
+    <div id="hexTool" class="fixed bottom-24 right-8 w-96 bg-white rounded-3xl shadow-2xl border border-slate-200 hidden z-50 overflow-hidden">
+        <div class="bg-slate-900 p-5 text-white flex justify-between items-center">
+            <span class="font-bold">Hex ➔ Binary 工具</span>
+            <button onclick="toggleTool()" class="text-slate-400 hover:text-white text-xl">✕</button>
+        </div>
+        <div class="p-6 space-y-5">
+            <textarea id="hexInput" class="w-full h-28 bg-slate-50 border rounded-xl p-4 mono outline-none text-sm" placeholder="粘贴 Hex 字符串..."></textarea>
+            <div class="bg-indigo-50 p-4 rounded-xl">
+                <span class="text-xs font-bold text-indigo-400 uppercase block mb-2">解码文本</span>
+                <div id="textOutput" class="text-base font-bold text-indigo-700 break-all"></div>
+            </div>
+            <div class="bg-slate-900 p-4 rounded-xl">
+                <span class="text-xs font-bold text-slate-500 uppercase block mb-2">二进制流</span>
+                <div id="binOutput" class="text-[11px] mono text-emerald-400 h-32 overflow-y-auto leading-relaxed"></div>
+            </div>
+        </div>
+    </div>
+
+    <button onclick="toggleTool()" class="fixed bottom-8 right-8 w-16 h-16 bg-slate-900 text-white rounded-2xl shadow-xl flex items-center justify-center hover:scale-110 transition-transform">
+        <span class="font-bold tracking-tighter">HEX</span>
+    </button>
+
+    <script>
+        let isTestnet = false;
+        let allPairs = [];
+        let baseUrl = "https://bridge-api.wanchain.org/api/";
+
+        const hexToUtf8 = s => { try { return decodeURIComponent(s.replace(/\s+/g, '').replace(/[0-9a-f]{2}/g, '%$&')); } catch(e) { return s; } };
+
+        async function syncData() {
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            statusDot.className = "w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse";
+            statusText.innerText = "正在更新数据池...";
+            try {
+                const res = await fetch(baseUrl + "tokenPairs").then(r => r.json());
+                allPairs = res.data || [];
+                statusDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
+                statusText.innerText = `已加载 ${allPairs.length} 条路径`;
+                doFilter();
+            } catch (e) { 
+                statusDot.className = "w-2.5 h-2.5 rounded-full bg-red-500";
+                statusText.innerText = `同步失败`; 
+            }
+        }
+
+        function showSuggestions(inputId, suggestId, mode) {
+            const val = document.getElementById(inputId).value.trim().toLowerCase();
+            const listEl = document.getElementById(suggestId);
+            if (!val) { listEl.style.display = 'none'; doFilter(); return; }
+            let pool = (mode === 'chain') ? allPairs.flatMap(p => [p.fromChain.chainName, p.toChain.chainName]) : allPairs.map(p => p.symbol);
+            const uniqueMatches = [...new Set(pool)].filter(name => name.toLowerCase().startsWith(val)).sort();
+            if (uniqueMatches.length > 0) {
+                listEl.innerHTML = uniqueMatches.map(m => `<div class="suggest-item" onclick="selectItem('${inputId}', '${suggestId}', '${m}')">${m}</div>`).join('');
+                listEl.style.display = 'block';
+            } else { listEl.style.display = 'none'; }
+            doFilter();
+        }
+
+        function selectItem(inputId, suggestId, val) {
+            document.getElementById(inputId).value = val;
+            document.getElementById(suggestId).style.display = 'none';
+            doFilter();
+        }
+
+        function doFilter() {
+            const asset = document.getElementById('assetIn').value.trim().toLowerCase();
+            const valA = document.getElementById('chainA').value.trim().toLowerCase();
+            const valB = document.getElementById('chainB').value.trim().toLowerCase();
+            if (!asset && !valA && !valB) { document.getElementById('resultsList').innerHTML = ""; return; }
+            const matches = allPairs.filter(p => {
+                const sym = (p.symbol || "").toLowerCase();
+                const symUtf8 = hexToUtf8(p.symbol).toLowerCase();
+                const fromC = (p.fromChain.chainName || "").toLowerCase();
+                const toC = (p.toChain.chainName || "").toLowerCase();
+                const assetMatch = !asset || sym.includes(asset) || symUtf8.includes(asset);
+                let chainMatch = true;
+                if (valA && valB) { chainMatch = (fromC.includes(valA) && toC.includes(valB)) || (fromC.includes(valB) && toC.includes(valA)); }
+                else if (valA || valB) { const target = valA || valB; chainMatch = fromC.includes(target) || toC.includes(target); }
+                return assetMatch && chainMatch;
+            });
+            renderResults(matches);
+        }
+
+        function renderResults(list) {
+            const container = document.getElementById('resultsList');
+            if (list.length === 0) { container.innerHTML = `<div class='text-center py-20 text-slate-400 font-medium'>未找到匹配路径</div>`; return; }
+            container.innerHTML = list.map(p => {
+                const name = p.symbol.length > 10 ? hexToUtf8(p.symbol) : p.symbol;
+                return `
+                <div class="result-card overflow-hidden">
+                    <div class="p-8">
+                        <div class="flex flex-col md:flex-row justify-between items-start gap-6 mb-8">
+                            <div class="flex items-center gap-5">
+                                <div class="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white text-2xl font-black shadow-lg shadow-indigo-100">${name.substring(0,1)}</div>
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <h3 class="text-2xl font-black text-slate-900">${name}</h3>
+                                        <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-500 rounded-md mono font-bold">ID: ${p.tokenPairID}</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 mt-1 text-slate-500 font-bold text-sm">
+                                        <span>${p.fromChain.chainName}</span>
+                                        <span class="text-indigo-400">➔</span>
+                                        <span>${p.toChain.chainName}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button onclick="getQuotaAndFee('${p.fromChain.chainType}', '${p.toChain.chainType}', '${p.tokenPairID}', '${name}', 'box_${p.tokenPairID}')" 
+                                    class="w-full md:w-auto px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition shadow-md shadow-indigo-100">
+                                查询限额与费用
+                            </button>
+                        </div>
+
+                        <div id="box_${p.tokenPairID}" class="mb-8 hidden animate-in fade-in slide-in-from-top-4 duration-300">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
+                                    <span class="text-[10px] font-black text-emerald-400 uppercase block mb-1">Min Quota (最小额度)</span>
+                                    <div id="min_${p.tokenPairID}" class="text-lg font-black text-emerald-700 mono">--</div>
+                                </div>
+                                <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
+                                    <span class="text-[10px] font-black text-emerald-400 uppercase block mb-1">Max Quota (最大额度)</span>
+                                    <div id="max_${p.tokenPairID}" class="text-lg font-black text-emerald-700 mono">--</div>
+                                </div>
+                            </div>
+                            <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200">
+                                <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    实时跨链费用明细
+                                </h4>
+                                <div class="fee-item">
+                                    <span class="text-slate-600 font-medium">网络费 (Network Fee)(Wei)</span>
+                                    <div class="text-right">
+                                        <span id="net_${p.tokenPairID}" class="text-indigo-600 font-black text-sm mono">--</span>
+                                        <span id="netType_${p.tokenPairID}"></span>
+                                    </div>
+                                </div>
+                                <div class="fee-item">
+                                    <span class="text-slate-600 font-medium">手续费 (Operation Fee)</span>
+                                    <div class="text-right">
+                                        <span id="ops_${p.tokenPairID}" class="text-indigo-600 font-black text-sm mono">--</span>
+                                        <span id="opsType_${p.tokenPairID}"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 text-sm">
+                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">源链 Token 地址</span>
+                                <code class="mono text-slate-700 break-all">${p.fromToken.address}</code>
+                            </div>
+                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">目标链 Token 地址</span>
+                                <code class="mono text-slate-700 break-all">${p.toToken.address}</code>
+                            </div>
+                        </div>
+
+                        <details class="group">
+                            <summary class="text-sm font-bold text-slate-400 cursor-pointer hover:text-slate-600 transition flex items-center gap-2">
+                                <svg class="w-4 h-4 group-open:rotate-90 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                                查看完整 JSON 数据
+                            </summary>
+                            <div class="mt-4 json-block"><pre>${JSON.stringify(p, null, 2)}</pre></div>
+                        </details>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        async function getQuotaAndFee(f, t, id, symbol, boxId) {
+            const box = document.getElementById(boxId);
+            box.classList.remove('hidden');
+            
+            const fields = ['min', 'max', 'net', 'ops'];
+            fields.forEach(fld => {
+                const el = document.getElementById(`${fld}_${id}`);
+                if(el) el.innerText = "加载中...";
+            });
+
+            try {
+                const url = `${baseUrl}quotaAndFee?fromChainType=${f}&toChainType=${t}&tokenPairID=${id}&symbol=${symbol}`;
+                const res = await fetch(url).then(r => r.json());
+                const d = res.data;
+
+                // 填充 Quota
+                document.getElementById(`min_${id}`).innerText = d.minQuota || "0";
+                document.getElementById(`max_${id}`).innerText = d.maxQuota || "无上限";
+                
+                // 填充 Network Fee
+                const netV = typeof d.networkFee === 'object' ? d.networkFee.value : d.networkFee;
+                document.getElementById(`net_${id}`).innerText = netV;
+                document.getElementById(`netType_${id}`).innerHTML = d.networkFee.isPercent ? '<span class="badge-pct">百分比</span>' : '';
+
+                // 填充 Operation Fee
+                const opsV = typeof d.operationFee === 'object' ? d.operationFee.value : d.operationFee;
+                document.getElementById(`ops_${id}`).innerText = opsV;
+                document.getElementById(`opsType_${id}`).innerHTML = d.operationFee.isPercent ? '<span class="badge-pct">百分比</span>' : '';
+
+            } catch (e) {
+                fields.forEach(fld => {
+                    const el = document.getElementById(`${fld}_${id}`);
+                    if(el) el.innerText = "Error";
+                });
+            }
+        }
+
+        function changeEnv(val) {
+            isTestnet = val;
+            baseUrl = isTestnet ? "https://bridge-api.wanchain.org/api/testnet/" : "https://bridge-api.wanchain.org/api/";
+            document.getElementById('btnMain').className = !isTestnet ? "px-8 py-2.5 rounded-xl text-sm font-bold bg-indigo-600 text-white shadow-lg shadow-indigo-100 transition-all" : "px-8 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:text-indigo-600 transition-all";
+            document.getElementById('btnTest').className = isTestnet ? "px-8 py-2.5 rounded-xl text-sm font-bold bg-indigo-600 text-white shadow-lg shadow-indigo-100 transition-all" : "px-8 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:text-indigo-600 transition-all";
+            syncData();
+        }
+
+        function toggleTool() { document.getElementById('hexTool').classList.toggle('hidden'); }
+
+        document.getElementById('hexInput').addEventListener('input', e => {
+            const raw = e.target.value.replace(/^0x/, '').replace(/\./g, '').replace(/\s/g, '');
+            let bin = ""; let text = "";
+            for (let i = 0; i < raw.length; i++) {
+                bin += parseInt(raw[i], 16).toString(2).padStart(4, '0') + " ";
+                if (i % 2 === 1) text += String.fromCharCode(parseInt(raw.substr(i-1, 2), 16));
+            }
+            document.getElementById('binOutput').innerText = bin.trim();
+            document.getElementById('textOutput').innerText = text;
+        });
+
+        document.addEventListener('click', e => { if (!e.target.closest('.suggest-container')) document.querySelectorAll('.suggest-list').forEach(el => el.style.display = 'none'); });
+
+        changeEnv(false);
+    </script>
+</body>
+</html>
