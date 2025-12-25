@@ -350,7 +350,18 @@
         function addPairToSelection(pair) {
             if (pair) {
                 if (!selectedPairsData.some(p => p.tokenPairID === pair.tokenPairID)) {
-                    selectedPairsData.push(pair);
+                    if (swapped) {
+                        const swappedPair = {
+                            ...pair,
+                            fromChain: pair.toChain,
+                            toChain: pair.fromChain,
+                            fromToken: pair.toToken,
+                            toToken: pair.fromToken
+                        };
+                        selectedPairsData.push(swappedPair);
+                    } else {
+                        selectedPairsData.push(pair);
+                    }
                     renderSelectedPairs();
                 } else {
                     alert('This token pair is already in the selection.');
