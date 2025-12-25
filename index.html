@@ -52,7 +52,7 @@
                                 <input type="text" id="chainA" autocomplete="off" placeholder="例如: BSC" class="input-pill w-full" oninput="showSuggestions('chainA', 'chainASuggest', 'chain')">
                                 <div id="chainASuggest" class="suggest-list"></div>
                             </div>
-                            <button onclick="swapNetworks()" class="w-12 h-12 flex items-center justify-center bg-slate-100 hover:bg-slate-200 rounded-full transition mb-1">
+                            <button onclick="swapNetworks()" aria-label="Swap Networks" class="w-12 h-12 flex items-center justify-center bg-slate-100 hover:bg-slate-200 rounded-full transition mb-1">
                                 <svg class="w-6 h-6 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
                             </button>
                             <div class="suggest-container">
@@ -131,7 +131,6 @@
         let selectedPairsData = [];
         let csvHeaders = ['id', 'smg', 'token_name', 'token_pair', 'tokenid', 'tokendecimals', 'network_fee'];
         let baseUrl = "https://bridge-api.wanchain.org/api/";
-        let swapped = false;
 
         const hexToUtf8 = s => { try { return decodeURIComponent(s.replace(/\s+/g, '').replace(/[0-9a-f]{2}/g, '%$&')); } catch(e) { return s; } };
 
@@ -176,17 +175,28 @@
             const valA = document.getElementById('chainA').value.trim().toLowerCase();
             const valB = document.getElementById('chainB').value.trim().toLowerCase();
             if (!asset && !valA && !valB) { document.getElementById('resultsList').innerHTML = ""; return; }
-            const matches = allPairs.filter(p => {
+
+            const matches = allPairs.map(p => {
                 const sym = (p.symbol || "").toLowerCase();
                 const symUtf8 = hexToUtf8(p.symbol).toLowerCase();
                 const fromC = (p.fromChain.chainName || "").toLowerCase();
                 const toC = (p.toChain.chainName || "").toLowerCase();
                 const assetMatch = !asset || sym.includes(asset) || symUtf8.includes(asset);
-                let chainMatch = true;
-                if (valA && valB) { chainMatch = (fromC.includes(valA) && toC.includes(valB)) || (fromC.includes(valB) && toC.includes(valA)); }
-                else if (valA || valB) { const target = valA || valB; chainMatch = fromC.includes(target) || toC.includes(target); }
-                return assetMatch && chainMatch;
-            });
+
+                if (!assetMatch) return null;
+
+                const straightMatch = (!valA || fromC.includes(valA)) && (!valB || toC.includes(valB));
+                const reverseMatch = (!valA || fromC.includes(valB)) && (!valB || toC.includes(valA));
+
+                if (straightMatch) {
+                    return { ...p, _isSwapped: false };
+                }
+                if (reverseMatch) {
+                    return { ...p, _isSwapped: true };
+                }
+                return null;
+            }).filter(Boolean);
+
             renderResults(matches);
         }
 
@@ -195,10 +205,13 @@
             if (list.length === 0) { container.innerHTML = `<div class='text-center py-20 text-slate-400 font-medium'>未找到匹配路径</div>`; return; }
             container.innerHTML = list.map(p => {
                 const name = p.symbol.length > 10 ? hexToUtf8(p.symbol) : p.symbol;
-                const fromChain = swapped ? p.toChain : p.fromChain;
-                const toChain = swapped ? p.fromChain : p.toChain;
-                const fromToken = swapped ? p.toToken : p.fromToken;
-                const toToken = swapped ? p.fromToken : p.toToken;
+                const fromChain = p._isSwapped ? p.toChain : p.fromChain;
+                const toChain = p._isSwapped ? p.fromChain : p.toChain;
+                const fromToken = p._isSwapped ? p.toToken : p.fromToken;
+                const toToken = p._isSwapped ? p.fromToken : p.toToken;
+                const pairForOnClick = { ...p, fromChain, toChain, fromToken, toToken };
+                delete pairForOnClick['_isSwapped'];
+
                 return `
                 <div class="result-card overflow-hidden">
                     <div class="p-8">
@@ -218,7 +231,7 @@
                                 </div>
                             </div>
                             <div>
-                                <button onclick='addPairToSelection(${JSON.stringify(p)})'
+                                <button onclick='addPairToSelection(${JSON.stringify(pairForOnClick)})'
                                         class="w-full md:w-auto px-6 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition shadow-md shadow-green-100 mb-2">
                                     +
                                 </button>
@@ -278,7 +291,7 @@
                                 <svg class="w-4 h-4 group-open:rotate-90 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
                                 查看完整 JSON 数据
                             </summary>
-                            <div class="mt-4 json-block"><pre>${JSON.stringify(p, null, 2)}</pre></div>
+                            <div class="mt-4 json-block"><pre>${JSON.stringify(pairForOnClick, null, 2)}</pre></div>
                         </details>
                     </div>
                 </div>`;
@@ -363,21 +376,8 @@
             if (pair) {
                 if (!selectedPairsData.some(p => p.tokenPairID === pair.tokenPairID)) {
                     const pairToAdd = { ...pair, network_fee: 'Loading...' };
-
-                    if (swapped) {
-                        const swappedPair = {
-                            ...pairToAdd,
-                            fromChain: pair.toChain,
-                            toChain: pair.fromChain,
-                            fromToken: pair.toToken,
-                            toToken: pair.fromToken
-                        };
-                        selectedPairsData.push(swappedPair);
-                        getQuotaAndFee(swappedPair.fromChain.chainType, swappedPair.toChain.chainType, swappedPair.tokenPairID, swappedPair.symbol);
-                    } else {
-                        selectedPairsData.push(pairToAdd);
-                        getQuotaAndFee(pairToAdd.fromChain.chainType, pairToAdd.toChain.chainType, pairToAdd.tokenPairID, pairToAdd.symbol);
-                    }
+                    selectedPairsData.push(pairToAdd);
+                    getQuotaAndFee(pairToAdd.fromChain.chainType, pairToAdd.toChain.chainType, pairToAdd.tokenPairID, pairToAdd.symbol);
                     renderSelectedPairs();
                 } else {
                     alert('This token pair is already in the selection.');
@@ -389,7 +389,6 @@
             const chainA = document.getElementById('chainA');
             const chainB = document.getElementById('chainB');
             [chainA.value, chainB.value] = [chainB.value, chainA.value];
-            swapped = !swapped;
             doFilter();
         }
 
