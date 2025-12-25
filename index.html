@@ -46,15 +46,12 @@
                             <input type="text" id="assetIn" autocomplete="off" placeholder="例如: BTC" class="input-pill w-full" oninput="showSuggestions('assetIn', 'assetSuggest', 'asset')">
                             <div id="assetSuggest" class="suggest-list"></div>
                         </div>
-                        <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 items-end">
+                        <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
                             <div class="suggest-container">
                                 <label class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1">Network A 链</label>
                                 <input type="text" id="chainA" autocomplete="off" placeholder="例如: BSC" class="input-pill w-full" oninput="showSuggestions('chainA', 'chainASuggest', 'chain')">
                                 <div id="chainASuggest" class="suggest-list"></div>
                             </div>
-                            <button onclick="swapNetworks()" aria-label="Swap Networks" class="w-12 h-12 flex items-center justify-center bg-slate-100 hover:bg-slate-200 rounded-full transition mb-1">
-                                <svg class="w-6 h-6 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
-                            </button>
                             <div class="suggest-container">
                                 <label class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1">Network B 链</label>
                                 <input type="text" id="chainB" autocomplete="off" placeholder="例如: Cardano" class="input-pill w-full" oninput="showSuggestions('chainB', 'chainBSuggest', 'chain')">
@@ -62,9 +59,12 @@
                             </div>
                         </div>
                     </div>
-                    <div id="dataStatus" class="mt-6 text-sm font-medium text-slate-400 flex items-center gap-2">
-                        <span id="statusDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                        <span id="statusText">正在同步数据...</span>
+                    <div class="mt-6 flex justify-between items-center">
+                        <div id="dataStatus" class="text-sm font-medium text-slate-400 flex items-center gap-2">
+                            <span id="statusDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                            <span id="statusText">正在同步数据...</span>
+                        </div>
+                        <button onclick="doFilter()" class="px-6 py-3 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition">Search</button>
                     </div>
                 </section>
                 <div id="resultsList" class="space-y-8"></div>
@@ -129,10 +129,28 @@
         let isTestnet = false;
         let allPairs = [];
         let selectedPairsData = [];
-        let csvHeaders = ['id', 'smg', 'token_name', 'token_pair', 'tokenid', 'tokendecimals', 'network_fee'];
+        let manuallySwappedPairIDs = new Set();
+        let csvHeaders = ['id', 'smg', 'token_name', 'token_pair_id', 'from_token_address', 'from_token_tokendecimals', 'network_fee', 'network_fee_asset'];
         let baseUrl = "https://bridge-api.wanchain.org/api/";
+        let rawSmgID = '';
 
         const hexToUtf8 = s => { try { return decodeURIComponent(s.replace(/\s+/g, '').replace(/[0-9a-f]{2}/g, '%$&')); } catch(e) { return s; } };
+
+        const getDisplayName = (symbol) => {
+            if (!symbol) return '';
+            const decoded = hexToUtf8(symbol);
+            if (decoded === symbol) {
+                return symbol;
+            }
+            // Check for non-printable ASCII characters to avoid showing garbage
+            for (let i = 0; i < decoded.length; i++) {
+                const charCode = decoded.charCodeAt(i);
+                if (charCode < 32 || charCode > 126) {
+                    return symbol;
+                }
+            }
+            return decoded;
+        };
 
         async function syncData() {
             const statusDot = document.getElementById('statusDot');
@@ -154,20 +172,18 @@
         function showSuggestions(inputId, suggestId, mode) {
             const val = document.getElementById(inputId).value.trim().toLowerCase();
             const listEl = document.getElementById(suggestId);
-            if (!val) { listEl.style.display = 'none'; doFilter(); return; }
+            if (!val) { listEl.style.display = 'none'; return; }
             let pool = (mode === 'chain') ? allPairs.flatMap(p => [p.fromChain.chainName, p.toChain.chainName]) : allPairs.map(p => p.symbol);
             const uniqueMatches = [...new Set(pool)].filter(name => name.toLowerCase().startsWith(val)).sort();
             if (uniqueMatches.length > 0) {
                 listEl.innerHTML = uniqueMatches.map(m => `<div class="suggest-item" onclick="selectItem('${inputId}', '${suggestId}', '${m}')">${m}</div>`).join('');
                 listEl.style.display = 'block';
             } else { listEl.style.display = 'none'; }
-            doFilter();
         }
 
         function selectItem(inputId, suggestId, val) {
             document.getElementById(inputId).value = val;
             document.getElementById(suggestId).style.display = 'none';
-            doFilter();
         }
 
         function doFilter() {
@@ -198,94 +214,100 @@
             }).filter(Boolean);
 
             renderResults(matches);
+
+            // Clear inputs after search
+            document.getElementById('assetIn').value = '';
+            document.getElementById('chainA').value = '';
+            document.getElementById('chainB').value = '';
         }
 
-        function renderResults(list) {
-            const container = document.getElementById('resultsList');
-            if (list.length === 0) { container.innerHTML = `<div class='text-center py-20 text-slate-400 font-medium'>未找到匹配路径</div>`; return; }
-            container.innerHTML = list.map(p => {
-                const name = p.symbol.length > 10 ? hexToUtf8(p.symbol) : p.symbol;
-                const fromChain = p._isSwapped ? p.toChain : p.fromChain;
-                const toChain = p._isSwapped ? p.fromChain : p.toChain;
-                const fromToken = p._isSwapped ? p.toToken : p.fromToken;
-                const toToken = p._isSwapped ? p.fromToken : p.toToken;
-                const pairForOnClick = { ...p, fromChain, toChain, fromToken, toToken };
-                delete pairForOnClick['_isSwapped'];
+        function renderCard(p, isSwapped = false) {
+            const name = getDisplayName(p.symbol);
+            const fromChain = isSwapped ? p.toChain : p.fromChain;
+            const toChain = isSwapped ? p.fromChain : p.toChain;
+            const fromToken = isSwapped ? p.toToken : p.fromToken;
+            const toToken = isSwapped ? p.fromToken : p.toToken;
+            const pairForOnClick = { ...p, fromChain, toChain, fromToken, toToken };
+            const isSelected = selectedPairsData.some(sp => sp.tokenPairID === p.tokenPairID);
 
-                return `
-                <div class="result-card overflow-hidden">
-                    <div class="p-8">
-                        <div class="flex flex-col md:flex-row justify-between items-start gap-6 mb-8">
-                            <div class="flex items-center gap-5">
-                                <div class="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white text-2xl font-black shadow-lg shadow-indigo-100">${name.substring(0,1)}</div>
-                                <div>
-                                    <div class="flex items-center gap-2">
-                                        <h3 class="text-2xl font-black text-slate-900">${name}</h3>
-                                        <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-500 rounded-md mono font-bold">ID: ${p.tokenPairID}</span>
-                                    </div>
-                                    <div class="flex items-center gap-2 mt-1 text-slate-500 font-bold text-sm">
-                                        <span>${fromChain.chainName}</span>
-                                        <span class="text-indigo-400">➔</span>
-                                        <span>${toChain.chainName}</span>
-                                    </div>
+            return `
+            <div class="result-card overflow-hidden" id="card-${p.tokenPairID}">
+                <div class="p-8">
+                    <div class="flex flex-col md:flex-row justify-between items-start gap-6 mb-8">
+                        <div class="flex items-center gap-5">
+                            <div class="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white text-2xl font-black shadow-lg shadow-indigo-100">${name.substring(0,1)}</div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h3 class="text-2xl font-black text-slate-900">${name}</h3>
+                                    <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-500 rounded-md mono font-bold">ID: ${p.tokenPairID}</span>
+                                </div>
+                                <div class="flex items-center gap-2 mt-1 text-slate-500 font-bold text-sm">
+                                    <span>${fromChain.chainName}</span>
+                                    <span class="text-indigo-400">➔</span>
+                                    <span>${toChain.chainName}</span>
                                 </div>
                             </div>
-                            <div>
-                                <button onclick='addPairToSelection(${JSON.stringify(pairForOnClick)})'
-                                        class="w-full md:w-auto px-6 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition shadow-md shadow-green-100 mb-2">
-                                    +
+                        </div>
+                        <div class="flex flex-col items-end">
+                            <button onclick='togglePairSelection(${JSON.stringify(pairForOnClick)})'
+                                    class="w-full md:w-auto px-6 py-3 font-bold rounded-xl transition shadow-md mb-2 ${isSelected ? 'bg-slate-200 text-slate-500 shadow-slate-100' : 'bg-green-500 text-white hover:bg-green-600 shadow-green-100'}">
+                                ${isSelected ? 'Added' : '+'}
+                            </button>
+                            <div class="flex gap-2">
+                                <button onclick='swapPairDirection(${JSON.stringify(p)}, ${isSwapped})'
+                                        class="w-full md:w-auto px-6 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition shadow-sm">
+                                    Swap
                                 </button>
-                                <button onclick="getQuotaAndFee('${fromChain.chainType}', '${toChain.chainType}', '${p.tokenPairID}', '${name}', 'box_${p.tokenPairID}')"
+                                <button onclick="getQuotaAndFee('${fromChain.chainType}', '${toChain.chainType}', '${p.tokenPairID}', ${JSON.stringify(p.symbol)}, 'box_${p.tokenPairID}')"
                                         class="w-full md:w-auto px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition shadow-md shadow-indigo-100">
                                     查询限额与费用
                                 </button>
                             </div>
                         </div>
-
-                        <div id="box_${p.tokenPairID}" class="mb-8 hidden animate-in fade-in slide-in-from-top-4 duration-300">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
-                                    <span class="text-[10px] font-black text-emerald-400 uppercase block mb-1">Min Quota (最小额度)</span>
-                                    <div id="min_${p.tokenPairID}" class="text-lg font-black text-emerald-700 mono">--</div>
-                                </div>
-                                <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
-                                    <span class="text-[10px] font-black text-emerald-400 uppercase block mb-1">Max Quota (最大额度)</span>
-                                    <div id="max_${p.tokenPairID}" class="text-lg font-black text-emerald-700 mono">--</div>
+                    </div>
+                    <div id="box_${p.tokenPairID}" class="mb-8 hidden animate-in fade-in slide-in-from-top-4 duration-300">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
+                                <span class="text-[10px] font-black text-emerald-400 uppercase block mb-1">Min Quota (最小额度)</span>
+                                <div id="min_${p.tokenPairID}" class="text-lg font-black text-emerald-700 mono">--</div>
+                            </div>
+                            <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
+                                <span class="text-[10px] font-black text-emerald-400 uppercase block mb-1">Max Quota (最大额度)</span>
+                                <div id="max_${p.tokenPairID}" class="text-lg font-black text-emerald-700 mono">--</div>
+                            </div>
+                        </div>
+                        <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200">
+                            <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                实时跨链费用明细
+                            </h4>
+                            <div class="fee-item">
+                                <span class="text-slate-600 font-medium">网络费 (Network Fee)(Wei)</span>
+                                <div class="text-right">
+                                    <span id="net_${p.tokenPairID}" class="text-indigo-600 font-black text-sm mono">--</span>
+                                    <span id="netType_${p.tokenPairID}"></span>
                                 </div>
                             </div>
-                            <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200">
-                                <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                    实时跨链费用明细
-                                </h4>
-                                <div class="fee-item">
-                                    <span class="text-slate-600 font-medium">网络费 (Network Fee)(Wei)</span>
-                                    <div class="text-right">
-                                        <span id="net_${p.tokenPairID}" class="text-indigo-600 font-black text-sm mono">--</span>
-                                        <span id="netType_${p.tokenPairID}"></span>
-                                    </div>
-                                </div>
-                                <div class="fee-item">
-                                    <span class="text-slate-600 font-medium">手续费 (Operation Fee)</span>
-                                    <div class="text-right">
-                                        <span id="ops_${p.tokenPairID}" class="text-indigo-600 font-black text-sm mono">--</span>
-                                        <span id="opsType_${p.tokenPairID}"></span>
-                                    </div>
+                            <div class="fee-item">
+                                <span class="text-slate-600 font-medium">手续费 (Operation Fee)</span>
+                                <div class="text-right">
+                                    <span id="ops_${p.tokenPairID}" class="text-indigo-600 font-black text-sm mono">--</span>
+                                    <span id="opsType_${p.tokenPairID}"></span>
                                 </div>
                             </div>
                         </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 text-sm">
-                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">源链 Token 地址</span>
-                                <code class="mono text-slate-700 break-all">${fromToken.address}</code>
-                            </div>
-                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">目标链 Token 地址</span>
-                                <code class="mono text-slate-700 break-all">${toToken.address}</code>
-                            </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 text-sm px-8">
+                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                            <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">源链 Token 地址</span>
+                            <code class="mono text-slate-700 break-all">${fromToken.address}</code>
                         </div>
-
+                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                            <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">目标链 Token 地址</span>
+                            <code class="mono text-slate-700 break-all">${toToken.address}</code>
+                        </div>
+                    </div>
+                    <div class="px-8 pb-8">
                         <details class="group">
                             <summary class="text-sm font-bold text-slate-400 cursor-pointer hover:text-slate-600 transition flex items-center gap-2">
                                 <svg class="w-4 h-4 group-open:rotate-90 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
@@ -294,8 +316,17 @@
                             <div class="mt-4 json-block"><pre>${JSON.stringify(pairForOnClick, null, 2)}</pre></div>
                         </details>
                     </div>
-                </div>`;
-            }).join('');
+                </div>
+            </div>`;
+        }
+
+        function renderResults(list) {
+            const container = document.getElementById('resultsList');
+            if (list.length === 0) {
+                container.innerHTML = `<div class='text-center py-20 text-slate-400 font-medium'>未找到匹配路径</div>`;
+                return;
+            }
+            container.innerHTML = list.map(p => renderCard(p, p._isSwapped)).join('');
         }
 
         async function getQuotaAndFee(f, t, id, symbol, boxId) {
@@ -319,6 +350,8 @@
                 const selectedPair = selectedPairsData.find(p => p.tokenPairID === id);
                 if (selectedPair) {
                     selectedPair.network_fee = netV;
+                    // Use display name for the asset in the table
+                    selectedPair.network_fee_asset = getDisplayName(symbol);
                     renderSelectedPairs();
                 }
 
@@ -362,38 +395,44 @@
             try {
                 const res = await fetch(`${baseUrl}smgID`).then(r => r.json());
                 if (res.success) {
-                    displayEl.innerText = res.data;
+                    rawSmgID = res.data;
+                    displayEl.innerText = hexToUtf8(res.data);
                 } else {
+                    rawSmgID = '';
                     displayEl.innerText = 'Failed to load smgID.';
                 }
             } catch (error) {
                 console.error('Error fetching smgID:', error);
+                rawSmgID = '';
                 displayEl.innerText = 'Error loading smgID.';
             }
         }
 
-        function addPairToSelection(pair) {
-            if (pair) {
-                if (!selectedPairsData.some(p => p.tokenPairID === pair.tokenPairID)) {
-                    const pairToAdd = { ...pair, network_fee: 'Loading...' };
+        function togglePairSelection(pair) {
+            const isSelected = selectedPairsData.some(p => p.tokenPairID === pair.tokenPairID);
+            if (isSelected) {
+                removePairFromSelection(pair.tokenPairID);
+            } else {
+                if (pair) {
+                    const pairToAdd = { ...pair, network_fee: 'Loading...', network_fee_asset: '...'  };
                     selectedPairsData.push(pairToAdd);
-                    getQuotaAndFee(pairToAdd.fromChain.chainType, pairToAdd.toChain.chainType, pairToAdd.tokenPairID, pairToAdd.symbol);
-                    renderSelectedPairs();
-                } else {
-                    alert('This token pair is already in the selection.');
+                    getQuotaAndFee(pairToAdd.fromChain.chainType, pairToAdd.toChain.chainType, pairToAdd.tokenPairID, pair.symbol);
                 }
             }
+            doFilter(); // Re-render results to update button state
+            renderSelectedPairs();
         }
 
-        function swapNetworks() {
-            const chainA = document.getElementById('chainA');
-            const chainB = document.getElementById('chainB');
-            [chainA.value, chainB.value] = [chainB.value, chainA.value];
-            doFilter();
+        function swapPairDirection(pair, isSwapped) {
+            const cardElement = document.getElementById(`card-${pair.tokenPairID}`);
+            if (cardElement) {
+                cardElement.outerHTML = renderCard(pair, !isSwapped);
+            }
         }
 
         function removePairFromSelection(tokenPairID) {
             selectedPairsData = selectedPairsData.filter(p => p.tokenPairID !== tokenPairID);
+            doFilter(); // Also re-render results to update button state
             renderSelectedPairs();
         }
 
@@ -410,23 +449,29 @@
             });
             tableHTML += '<th>Actions</th></tr></thead><tbody>';
 
-            let smgID = document.getElementById('smgIDDisplay').innerText;
+            let decodedSmgID = document.getElementById('smgIDDisplay').innerText;
 
             selectedPairsData.forEach((p, index) => {
-                const name = p.symbol.length > 10 ? hexToUtf8(p.symbol) : p.symbol;
+                const name = getDisplayName(p.symbol);
                 const row = {
                     id: index + 1,
-                    smg: smgID,
+                    smg: decodedSmgID, // Display decoded SMG in table
                     token_name: name,
-                    token_pair: `${p.fromChain.chainName} ➔ ${p.toChain.chainName}`,
-                    tokenid: p.tokenPairID,
-                    tokendecimals: p.fromToken.decimals,
-                    network_fee: p.network_fee || ''
+                    token_pair_id: p.tokenPairID,
+                    from_token_address: p.fromToken.address,
+                    from_token_tokendecimals: p.fromToken.decimals,
+                    network_fee: p.network_fee || '',
+                    network_fee_asset: p.fromChain.chainType // Use fromChain.chainType
                 };
 
                 tableHTML += '<tr>';
                 csvHeaders.forEach(header => {
-                    tableHTML += `<td>${row[header] || ''}</td>`;
+                    // Make the SMG value breakable for better layout
+                    if (header === 'smg') {
+                        tableHTML += `<td style="word-break: break-all;">${row[header] || ''}</td>`;
+                    } else {
+                        tableHTML += `<td>${row[header] || ''}</td>`;
+                    }
                 });
                 tableHTML += `<td><button onclick="removePairFromSelection(${p.tokenPairID})" class="px-3 py-1 bg-red-500 text-white font-bold rounded-lg hover:bg-red-600 transition text-xs">Remove</button></td></tr>`;
             });
@@ -464,18 +509,18 @@
 
         function generateCSV() {
             let csvContent = "data:text/csv;charset=utf-8," + csvHeaders.join(",") + "\n";
-            let smgID = document.getElementById('smgIDDisplay').innerText;
 
             selectedPairsData.forEach((p, index) => {
-                const name = p.symbol.length > 10 ? hexToUtf8(p.symbol) : p.symbol;
+                const name = getDisplayName(p.symbol);
                 const row = {
                     id: index + 1,
-                    smg: smgID,
+                    smg: rawSmgID, // Use raw hex SMG for CSV
                     token_name: name,
-                    token_pair: `${p.fromChain.chainName} ➔ ${p.toChain.chainName}`,
-                    tokenid: p.tokenPairID,
-                    tokendecimals: p.fromToken.decimals,
-                    network_fee: p.network_fee || ''
+                    token_pair_id: p.tokenPairID,
+                    from_token_address: p.fromToken.address,
+                    from_token_tokendecimals: p.fromToken.decimals,
+                    network_fee: p.network_fee || '',
+                    network_fee_asset: p.fromChain.chainType // Use fromChain.chainType
                 };
 
                 let rowData = csvHeaders.map(header => {
