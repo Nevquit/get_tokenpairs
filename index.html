@@ -71,10 +71,10 @@
             </div>
 
             <div>
-                <section id="smgIDSection" class="mb-10">
-                    <h2 class="text-2xl font-bold mb-4">SMG ID</h2>
-                    <div id="smgIDDisplay" class="bg-white p-4 rounded-lg shadow-sm border border-slate-100">
-                        <!-- SMG ID will be displayed here -->
+                <section class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 mb-10">
+                    <label class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1">当前 SMG ID</label>
+                    <div id="smgIDDisplay" class="text-xl font-black text-indigo-600 mono break-all">
+                        --
                     </div>
                 </section>
 
@@ -130,7 +130,7 @@
         let allPairs = [];
         let selectedPairsData = [];
         let manuallySwappedPairIDs = new Set();
-        let csvHeaders = ['id', 'smg', 'token_name', 'token_pair_id', 'from_token_address', 'from_token_tokendecimals', 'network_fee', 'network_fee_asset'];
+        let csvHeaders = ['id', 'smg', 'token_name', 'token_pair_id', 'from_token_address', 'from_token_tokendecimals'];
         let baseUrl = "https://bridge-api.wanchain.org/api/";
         let rawSmgID = '';
 
@@ -201,32 +201,42 @@
 
                 if (!assetMatch) return null;
 
-                const straightMatch = (!valA || fromC.includes(valA)) && (!valB || toC.includes(valB));
-                const reverseMatch = (!valA || fromC.includes(valB)) && (!valB || toC.includes(valA));
+                // Case 1: Both networks are specified
+                if (valA && valB) {
+                    const straightMatch = fromC.includes(valA) && toC.includes(valB);
+                    const reverseMatch = fromC.includes(valB) && toC.includes(valA);
+                    if (straightMatch) return { ...p, _isSwapped: false };
+                    if (reverseMatch) return { ...p, _isSwapped: true };
+                }
+                // Case 2: Only one network is specified
+                else if (valA || valB) {
+                    const singleTerm = valA || valB;
+                    if (fromC.includes(singleTerm)) return { ...p, _isSwapped: false };
+                    if (toC.includes(singleTerm)) return { ...p, _isSwapped: true };
+                }
+                // Case 3: Only asset is specified
+                else if (asset) {
+                     return { ...p, _isSwapped: false };
+                }
 
-                if (straightMatch) {
-                    return { ...p, _isSwapped: false };
-                }
-                if (reverseMatch) {
-                    return { ...p, _isSwapped: true };
-                }
                 return null;
             }).filter(Boolean);
 
             renderResults(matches);
-
-            // Clear inputs after search
-            document.getElementById('assetIn').value = '';
-            document.getElementById('chainA').value = '';
-            document.getElementById('chainB').value = '';
         }
 
-        function renderCard(p, isSwapped = false) {
+        function renderCard(p, isSearchSwapped = false) {
             const name = getDisplayName(p.symbol);
-            const fromChain = isSwapped ? p.toChain : p.fromChain;
-            const toChain = isSwapped ? p.fromChain : p.toChain;
-            const fromToken = isSwapped ? p.toToken : p.fromToken;
-            const toToken = isSwapped ? p.fromToken : p.toToken;
+
+            // Determine the final direction based on both search and manual swaps
+            const isManuallySwapped = manuallySwappedPairIDs.has(p.tokenPairID);
+            const shouldBeSwapped = isManuallySwapped ? !isSearchSwapped : isSearchSwapped;
+
+            const fromChain = shouldBeSwapped ? p.toChain : p.fromChain;
+            const toChain = shouldBeSwapped ? p.fromChain : p.toChain;
+            const fromToken = shouldBeSwapped ? p.toToken : p.fromToken;
+            const toToken = shouldBeSwapped ? p.fromToken : p.toToken;
+
             const pairForOnClick = { ...p, fromChain, toChain, fromToken, toToken };
             const isSelected = selectedPairsData.some(sp => sp.tokenPairID === p.tokenPairID);
 
@@ -254,46 +264,10 @@
                                 ${isSelected ? 'Added' : '+'}
                             </button>
                             <div class="flex gap-2">
-                                <button onclick='swapPairDirection(${JSON.stringify(p)}, ${isSwapped})'
+                                <button onclick="swapPairDirection('${p.tokenPairID}')"
                                         class="w-full md:w-auto px-6 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition shadow-sm">
                                     Swap
                                 </button>
-                                <button onclick="getQuotaAndFee('${fromChain.chainType}', '${toChain.chainType}', '${p.tokenPairID}', ${JSON.stringify(p.symbol)}, 'box_${p.tokenPairID}')"
-                                        class="w-full md:w-auto px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition shadow-md shadow-indigo-100">
-                                    查询限额与费用
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="box_${p.tokenPairID}" class="mb-8 hidden animate-in fade-in slide-in-from-top-4 duration-300">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                            <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
-                                <span class="text-[10px] font-black text-emerald-400 uppercase block mb-1">Min Quota (最小额度)</span>
-                                <div id="min_${p.tokenPairID}" class="text-lg font-black text-emerald-700 mono">--</div>
-                            </div>
-                            <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
-                                <span class="text-[10px] font-black text-emerald-400 uppercase block mb-1">Max Quota (最大额度)</span>
-                                <div id="max_${p.tokenPairID}" class="text-lg font-black text-emerald-700 mono">--</div>
-                            </div>
-                        </div>
-                        <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200">
-                            <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                实时跨链费用明细
-                            </h4>
-                            <div class="fee-item">
-                                <span class="text-slate-600 font-medium">网络费 (Network Fee)(Wei)</span>
-                                <div class="text-right">
-                                    <span id="net_${p.tokenPairID}" class="text-indigo-600 font-black text-sm mono">--</span>
-                                    <span id="netType_${p.tokenPairID}"></span>
-                                </div>
-                            </div>
-                            <div class="fee-item">
-                                <span class="text-slate-600 font-medium">手续费 (Operation Fee)</span>
-                                <div class="text-right">
-                                    <span id="ops_${p.tokenPairID}" class="text-indigo-600 font-black text-sm mono">--</span>
-                                    <span id="opsType_${p.tokenPairID}"></span>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -301,16 +275,16 @@
                         <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
                             <div class="flex justify-between items-center mb-1">
                                 <span class="text-[10px] font-black text-slate-400 uppercase">源链 Token 地址</span>
-                                <button onclick="decodeAddress('from-addr-${p.tokenPairID}')" class="text-xs font-bold text-indigo-500 hover:text-indigo-700 p-1">解码</button>
+                                <button id="btn-from-addr-${p.tokenPairID}" onclick="toggleAddressEncoding('from-addr-${p.tokenPairID}', this)" class="text-xs font-bold text-indigo-500 hover:text-indigo-700 p-1">解码</button>
                             </div>
-                            <code id="from-addr-${p.tokenPairID}" class="mono text-slate-700 break-all">${fromToken.address}</code>
+                            <code id="from-addr-${p.tokenPairID}" data-original-address="${fromToken.address}" class="mono text-slate-700 break-all">${fromToken.address}</code>
                         </div>
                         <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
                             <div class="flex justify-between items-center mb-1">
                                 <span class="text-[10px] font-black text-slate-400 uppercase">目标链 Token 地址</span>
-                                <button onclick="decodeAddress('to-addr-${p.tokenPairID}')" class="text-xs font-bold text-indigo-500 hover:text-indigo-700 p-1">解码</button>
+                                <button id="btn-to-addr-${p.tokenPairID}" onclick="toggleAddressEncoding('to-addr-${p.tokenPairID}', this)" class="text-xs font-bold text-indigo-500 hover:text-indigo-700 p-1">解码</button>
                             </div>
-                            <code id="to-addr-${p.tokenPairID}" class="mono text-slate-700 break-all">${toToken.address}</code>
+                            <code id="to-addr-${p.tokenPairID}" data-original-address="${toToken.address}" class="mono text-slate-700 break-all">${toToken.address}</code>
                         </div>
                     </div>
                     <div class="px-8 pb-8">
@@ -335,57 +309,6 @@
             container.innerHTML = list.map(p => renderCard(p, p._isSwapped)).join('');
         }
 
-        async function getQuotaAndFee(f, t, id, symbol, boxId) {
-            if (boxId) {
-                const box = document.getElementById(boxId);
-                box.classList.remove('hidden');
-
-                const fields = ['min', 'max', 'net', 'ops'];
-                fields.forEach(fld => {
-                    const el = document.getElementById(`${fld}_${id}`);
-                    if(el) el.innerText = "加载中...";
-                });
-            }
-
-            try {
-                const url = `${baseUrl}quotaAndFee?fromChainType=${f}&toChainType=${t}&tokenPairID=${id}&symbol=${symbol}`;
-                const res = await fetch(url).then(r => r.json());
-                const d = res.data;
-
-                const netV = typeof d.networkFee === 'object' ? d.networkFee.value : d.networkFee;
-                const selectedPair = selectedPairsData.find(p => p.tokenPairID === id);
-                if (selectedPair) {
-                    selectedPair.network_fee = netV;
-                    // Use display name for the asset in the table
-                    selectedPair.network_fee_asset = getDisplayName(symbol);
-                    renderSelectedPairs();
-                }
-
-                if (boxId) {
-                    document.getElementById(`min_${id}`).innerText = d.minQuota || "0";
-                    document.getElementById(`max_${id}`).innerText = d.maxQuota || "无上限";
-                    document.getElementById(`net_${id}`).innerText = netV;
-                    document.getElementById(`netType_${id}`).innerHTML = d.networkFee.isPercent ? '<span class="badge-pct">百分比</span>' : '';
-                    const opsV = typeof d.operationFee === 'object' ? d.operationFee.value : d.operationFee;
-                    document.getElementById(`ops_${id}`).innerText = opsV;
-                    document.getElementById(`opsType_${id}`).innerHTML = d.operationFee.isPercent ? '<span class="badge-pct">百分比</span>' : '';
-                }
-            } catch (e) {
-                if (boxId) {
-                    const fields = ['min', 'max', 'net', 'ops'];
-                    fields.forEach(fld => {
-                        const el = document.getElementById(`${fld}_${id}`);
-                        if(el) el.innerText = "Error";
-                    });
-                }
-                const selectedPair = selectedPairsData.find(p => p.tokenPairID === id);
-                if (selectedPair) {
-                    selectedPair.network_fee = 'Error';
-                    renderSelectedPairs();
-                }
-            }
-        }
-
         function changeEnv(val) {
             isTestnet = val;
             baseUrl = isTestnet ? "https://bridge-api.wanchain.org/api/testnet/" : "https://bridge-api.wanchain.org/api/";
@@ -395,10 +318,21 @@
             fetchSmgID();
         }
 
-        function decodeAddress(elementId) {
+        function toggleAddressEncoding(elementId, buttonEl) {
             const el = document.getElementById(elementId);
-            if (el) {
-                el.innerText = hexToUtf8(el.innerText);
+            if (!el) return;
+
+            const originalAddress = el.dataset.originalAddress;
+            const currentText = el.innerText;
+
+            if (currentText === originalAddress) {
+                // It's encoded, so decode it
+                el.innerText = hexToUtf8(originalAddress);
+                buttonEl.innerText = '编码';
+            } else {
+                // It's decoded, so encode it
+                el.innerText = originalAddress;
+                buttonEl.innerText = '解码';
             }
         }
 
@@ -437,18 +371,19 @@
                     pairToAdd.toToken.address = toAddress;
 
                     selectedPairsData.push(pairToAdd);
-                    getQuotaAndFee(pairToAdd.fromChain.chainType, pairToAdd.toChain.chainType, pairToAdd.tokenPairID, pair.symbol);
                 }
             }
             doFilter(); // Re-render results to update button state
             renderSelectedPairs();
         }
 
-        function swapPairDirection(pair, isSwapped) {
-            const cardElement = document.getElementById(`card-${pair.tokenPairID}`);
-            if (cardElement) {
-                cardElement.outerHTML = renderCard(pair, !isSwapped);
+        function swapPairDirection(tokenPairID) {
+            if (manuallySwappedPairIDs.has(tokenPairID)) {
+                manuallySwappedPairIDs.delete(tokenPairID);
+            } else {
+                manuallySwappedPairIDs.add(tokenPairID);
             }
+            doFilter(); // Re-render to apply the swap state
         }
 
         function removePairFromSelection(tokenPairID) {
@@ -480,9 +415,7 @@
                     token_name: name,
                     token_pair_id: p.tokenPairID,
                     from_token_address: p.fromToken.address,
-                    from_token_tokendecimals: p.fromToken.decimals,
-                    network_fee: p.network_fee || '',
-                    network_fee_asset: p.fromChain.chainType // Use fromChain.chainType
+                    from_token_tokendecimals: p.fromToken.decimals
                 };
 
                 tableHTML += '<tr>';
@@ -503,9 +436,13 @@
 
         function addCsvHeader() {
             const newHeaderInput = document.getElementById('newHeaderInput');
-            const newHeader = newHeaderInput.value.trim();
-            if (newHeader && !csvHeaders.includes(newHeader)) {
-                csvHeaders.push(newHeader);
+            const newHeaders = newHeaderInput.value.trim().split(',').map(h => h.trim()).filter(Boolean);
+            if (newHeaders.length > 0) {
+                newHeaders.forEach(newHeader => {
+                    if (!csvHeaders.includes(newHeader)) {
+                        csvHeaders.push(newHeader);
+                    }
+                });
                 newHeaderInput.value = '';
                 renderCsvHeaders();
                 renderSelectedPairs();
@@ -539,9 +476,7 @@
                     token_name: name,
                     token_pair_id: p.tokenPairID,
                     from_token_address: p.fromToken.address,
-                    from_token_tokendecimals: p.fromToken.decimals,
-                    network_fee: p.network_fee || '',
-                    network_fee_asset: p.fromChain.chainType // Use fromChain.chainType
+                    from_token_tokendecimals: p.fromToken.decimals
                 };
 
                 let rowData = csvHeaders.map(header => {
