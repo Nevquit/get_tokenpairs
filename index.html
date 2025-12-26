@@ -514,7 +514,7 @@
                 const name = getDisplayName(p.symbol);
                 const row = {
                     id: index + 1,
-                    smg: rawSmgID, // Use raw hex SMG for CSV
+                    smg: rawSmgID.startsWith('0x') ? rawSmgID.substring(2) : rawSmgID, // Remove 0x prefix for CSV
                     token_name: name,
                     token_pair_id: p.tokenPairID,
                     from_token_address: p.fromToken.address,
