@@ -299,12 +299,18 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 text-sm px-8">
                         <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                            <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">源链 Token 地址</span>
-                            <code class="mono text-slate-700 break-all">${fromToken.address}</code>
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-[10px] font-black text-slate-400 uppercase">源链 Token 地址</span>
+                                <button onclick="decodeAddress('from-addr-${p.tokenPairID}')" class="text-xs font-bold text-indigo-500 hover:text-indigo-700 p-1">解码</button>
+                            </div>
+                            <code id="from-addr-${p.tokenPairID}" class="mono text-slate-700 break-all">${fromToken.address}</code>
                         </div>
                         <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                            <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">目标链 Token 地址</span>
-                            <code class="mono text-slate-700 break-all">${toToken.address}</code>
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-[10px] font-black text-slate-400 uppercase">目标链 Token 地址</span>
+                                <button onclick="decodeAddress('to-addr-${p.tokenPairID}')" class="text-xs font-bold text-indigo-500 hover:text-indigo-700 p-1">解码</button>
+                            </div>
+                            <code id="to-addr-${p.tokenPairID}" class="mono text-slate-700 break-all">${toToken.address}</code>
                         </div>
                     </div>
                     <div class="px-8 pb-8">
@@ -389,6 +395,13 @@
             fetchSmgID();
         }
 
+        function decodeAddress(elementId) {
+            const el = document.getElementById(elementId);
+            if (el) {
+                el.innerText = hexToUtf8(el.innerText);
+            }
+        }
+
         async function fetchSmgID() {
             const displayEl = document.getElementById('smgIDDisplay');
             displayEl.innerText = 'Loading...';
@@ -396,7 +409,8 @@
                 const res = await fetch(`${baseUrl}smgID`).then(r => r.json());
                 if (res.success) {
                     rawSmgID = res.data;
-                    displayEl.innerText = hexToUtf8(res.data);
+                    const displaySmg = hexToUtf8(res.data);
+                    displayEl.innerText = displaySmg.startsWith('0x') ? displaySmg.substring(2) : displaySmg;
                 } else {
                     rawSmgID = '';
                     displayEl.innerText = 'Failed to load smgID.';
@@ -414,7 +428,14 @@
                 removePairFromSelection(pair.tokenPairID);
             } else {
                 if (pair) {
-                    const pairToAdd = { ...pair, network_fee: 'Loading...', network_fee_asset: '...'  };
+                    // Read current (potentially decoded) addresses from the DOM
+                    const fromAddress = document.getElementById(`from-addr-${pair.tokenPairID}`).innerText;
+                    const toAddress = document.getElementById(`to-addr-${pair.tokenPairID}`).innerText;
+
+                    const pairToAdd = { ...pair, network_fee: 'Loading...', network_fee_asset: '...' };
+                    pairToAdd.fromToken.address = fromAddress;
+                    pairToAdd.toToken.address = toAddress;
+
                     selectedPairsData.push(pairToAdd);
                     getQuotaAndFee(pairToAdd.fromChain.chainType, pairToAdd.toChain.chainType, pairToAdd.tokenPairID, pair.symbol);
                 }
@@ -514,7 +535,7 @@
                 const name = getDisplayName(p.symbol);
                 const row = {
                     id: index + 1,
-                    smg: rawSmgID.startsWith('0x') ? rawSmgID.substring(2) : rawSmgID, // Remove 0x prefix for CSV
+                    smg: rawSmgID, // Use raw hex SMG for CSV
                     token_name: name,
                     token_pair_id: p.tokenPairID,
                     from_token_address: p.fromToken.address,
