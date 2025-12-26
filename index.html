@@ -269,13 +269,15 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="flex flex-col items-end">
+                        <div class="flex items-center gap-2">
+                             <button onclick="getFee('${p.tokenPairID}')" class="px-4 py-2 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600 transition text-xs">Get Fee</button>
                             <button onclick="togglePairSelection('${directionalID}')"
                                     class="w-full md:w-auto px-6 py-3 font-bold rounded-xl transition shadow-md ${isSelected ? 'bg-slate-200 text-slate-500 shadow-slate-100' : 'bg-green-500 text-white hover:bg-green-600 shadow-green-100'}">
                                 ${isSelected ? 'Added' : '+'}
                             </button>
                         </div>
                     </div>
+                    <div id="fee-info-${p.tokenPairID}" class="hidden mt-4 p-4 bg-gray-100 rounded-lg"></div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 text-sm px-8">
                         <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
                             <div class="flex justify-between items-center mb-1">
@@ -350,9 +352,9 @@
                 if (res.success) {
                     rawSmgID = res.data;
                     let displaySmg = hexToUtf8(res.data);
-                    // Sanitize the string to remove leading non-printable/control characters and nulls
-                    displaySmg = displaySmg.replace(/^[\u0000-\u001F\u007F-\u009F\s]+/, '');
-                    // Also remove leading zeros
+                    // Sanitize by removing all null characters and control characters, then trimming whitespace
+                    displaySmg = displaySmg.replace(/[\u0000-\u001F\u007F-\u009F]/g, '').trim();
+                    // Also remove leading zeros from the now-sanitized string
                     displaySmg = displaySmg.replace(/^0+/, '');
                     displayEl.innerText = displaySmg.startsWith('0x') ? displaySmg.substring(2) : displaySmg;
                 } else {
@@ -387,6 +389,28 @@
                 manuallySwappedPairIDs.add(tokenPairID);
             }
             doFilter(); // Re-render to apply the swap state
+        }
+
+        async function getFee(tokenPairID) {
+            const feeInfoContainer = document.getElementById(`fee-info-${tokenPairID}`);
+            feeInfoContainer.innerHTML = 'Loading fee...';
+            feeInfoContainer.classList.remove('hidden');
+
+            try {
+                const response = await fetch(`${baseUrl}getFee?tokenPairID=${tokenPairID}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    const fee = result.data.fee;
+                    const feeToken = result.data.token;
+                    feeInfoContainer.innerHTML = `Fee: ${fee} ${feeToken.symbol}`;
+                } else {
+                    feeInfoContainer.innerHTML = `Error: ${result.error}`;
+                }
+            } catch (error) {
+                console.error('Error fetching fee:', error);
+                feeInfoContainer.innerHTML = 'Error fetching fee information.';
+            }
         }
 
         function removePairFromSelection(directionalID) {
@@ -429,7 +453,9 @@
                 tableHTML += '<tr class="bg-white border-b hover:bg-slate-50">';
                 csvHeaders.forEach(header => {
                     let displayValue = row[header] === undefined || row[header] === null ? '' : row[header];
-                    if (header === 'from_token_address' || header === 'to_token_address') {
+                    if (header === 'from_token_address') {
+                        displayValue = hexToUtf8(String(displayValue));
+                    } else if (header === 'to_token_address') {
                         displayValue = shortenAddress(String(displayValue));
                     }
                      tableHTML += `<td class="px-6 py-4 mono font-medium text-slate-800 break-all">${displayValue}</td>`;
