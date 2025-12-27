@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Wanchain Bridge Explorer - Pro View</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bignumber.js@9.0.2/bignumber.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;700;900&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; font-size: 15px; }
@@ -373,7 +374,10 @@
 
         async function togglePairSelection(directionalID) {
             const pair = currentRenderedPairs.get(directionalID);
-            if (!pair) return;
+            if (!pair) {
+                console.error("Pair not found for ID:", directionalID);
+                return;
+            }
 
             const isSelected = selectedPairsData.some(p => p.directionalID === directionalID);
 
@@ -386,13 +390,20 @@
                 renderSelectedPairs(); // Update UI to show "Loading..."
 
                 try {
-                    const { fromChain, toChain, tokenPairID, symbol } = pair;
-                    const feeUrl = `${baseUrl}quotaAndFee?fromChainType=${fromChain.chainType}&toChainType=${toChain.chainType}&tokenPairID=${tokenPairID}&symbol=${symbol}`;
+                    const { fromChain, toChain, tokenPairID, symbol, fromToken } = pair;
+                    const cleanSymbol = getDisplayName(symbol);
+                    const feeUrl = `${baseUrl}quotaAndFee?fromChainType=${fromChain.chainType}&toChainType=${toChain.chainType}&tokenPairID=${tokenPairID}&symbol=${cleanSymbol}`;
                     const feeRes = await fetch(feeUrl).then(r => r.json());
 
-                    const fee = feeRes.success ? feeRes.data.networkFee.value : 'Error';
+                    let fee = 'Error';
+                    if (feeRes.success && feeRes.data && feeRes.data.networkFee && feeRes.data.networkFee.value) {
+                        const rawFee = feeRes.data.networkFee.value;
+                        const decimals = fromToken.decimals || 18;
+                        fee = new BigNumber(rawFee).div(new BigNumber(10).pow(decimals)).toString();
+                    } else {
+                        console.error("Fee data not found in API response:", feeRes);
+                    }
 
-                    // Find the pair and update its fee
                     const pairIndex = selectedPairsData.findIndex(p => p.directionalID === directionalID);
                     if (pairIndex !== -1) {
                         selectedPairsData[pairIndex].network_fee = fee;
@@ -406,8 +417,8 @@
                 }
             }
 
-            doFilter(); // This will re-render the cards
-            renderSelectedPairs(); // This will update the table with the fee
+            doFilter(); // Re-render the cards to update button states
+            renderSelectedPairs(); // Update the table with the final fee
         }
 
         function swapPairDirection(tokenPairID) {
