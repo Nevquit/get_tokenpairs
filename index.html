@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Wanchain Bridge Explorer - Pro View</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bignumber.js@9.0.2/bignumber.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;700;900&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; font-size: 15px; }
@@ -162,16 +161,29 @@
         async function getQuotaAndFee(f, t, id, symbol, boxId) {
             const box = document.getElementById(boxId);
             box.classList.remove('hidden');
+            const jsonEl = document.getElementById(`fee-json-${id}`);
 
             const fields = ['min', 'max', 'net', 'ops'];
             fields.forEach(fld => {
                 const el = document.getElementById(`${fld}_${id}`);
                 if(el) el.innerText = "加载中...";
             });
+            jsonEl.innerText = 'Loading...';
 
             try {
                 const url = `${baseUrl}quotaAndFee?fromChainType=${f}&toChainType=${t}&tokenPairID=${id}&symbol=${symbol}`;
-                const res = await fetch(url).then(r => r.json());
+                const response = await fetch(url);
+                 if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const res = await response.json();
+
+                // Display raw JSON
+                jsonEl.innerText = JSON.stringify(res, null, 2);
+
+                if (!res.success || !res.data) {
+                    throw new Error('API returned success:false or no data.');
+                }
                 const d = res.data;
 
                 // 填充 Quota
@@ -181,14 +193,20 @@
                 // 填充 Network Fee
                 const netV = typeof d.networkFee === 'object' ? d.networkFee.value : d.networkFee;
                 document.getElementById(`net_${id}`).innerText = netV;
-                document.getElementById(`netType_${id}`).innerHTML = d.networkFee.isPercent ? '<span class="badge-pct">百分比</span>' : '';
+                if (d.networkFee) {
+                    document.getElementById(`netType_${id}`).innerHTML = d.networkFee.isPercent ? '<span class="badge-pct">百分比</span>' : '';
+                }
 
                 // 填充 Operation Fee
                 const opsV = typeof d.operationFee === 'object' ? d.operationFee.value : d.operationFee;
                 document.getElementById(`ops_${id}`).innerText = opsV;
-                document.getElementById(`opsType_${id}`).innerHTML = d.operationFee.isPercent ? '<span class="badge-pct">百分比</span>' : '';
+                if (d.operationFee) {
+                    document.getElementById(`opsType_${id}`).innerHTML = d.operationFee.isPercent ? '<span class="badge-pct">百分比</span>' : '';
+                }
 
             } catch (e) {
+                console.error('Error in getQuotaAndFee:', e);
+                jsonEl.innerText = JSON.stringify({ error: e.message }, null, 2);
                 fields.forEach(fld => {
                     const el = document.getElementById(`${fld}_${id}`);
                     if(el) el.innerText = "Error";
@@ -320,28 +338,38 @@
                     </div>
 
                     <div id="fee-box-${p.tokenPairID}" class="hidden px-8 mb-8">
-                        <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
-                            <div class="fee-item-container">
-                                <span class="text-xs font-bold text-indigo-400 uppercase block mb-1">Min Quota</span>
-                                <span id="min_${p.tokenPairID}" class="mono font-bold text-indigo-900">--</span>
-                            </div>
-                            <div class="fee-item-container">
-                                <span class="text-xs font-bold text-indigo-400 uppercase block mb-1">Max Quota</span>
-                                <span id="max_${p.tokenPairID}" class="mono font-bold text-indigo-900">--</span>
-                            </div>
-                            <div class="fee-item-container">
-                                <span class="text-xs font-bold text-indigo-400 uppercase block mb-1">Network Fee</span>
-                                <div>
-                                    <span id="net_${p.tokenPairID}" class="mono font-bold text-indigo-900">--</span>
-                                    <span id="netType_${p.tokenPairID}"></span>
+                        <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-6 text-sm">
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                <div class="fee-item-container">
+                                    <span class="text-xs font-bold text-indigo-400 uppercase block mb-1">Min Quota</span>
+                                    <span id="min_${p.tokenPairID}" class="mono font-bold text-indigo-900">--</span>
+                                </div>
+                                <div class="fee-item-container">
+                                    <span class="text-xs font-bold text-indigo-400 uppercase block mb-1">Max Quota</span>
+                                    <span id="max_${p.tokenPairID}" class="mono font-bold text-indigo-900">--</span>
+                                </div>
+                                <div class="fee-item-container">
+                                    <span class="text-xs font-bold text-indigo-400 uppercase block mb-1">Network Fee</span>
+                                    <div>
+                                        <span id="net_${p.tokenPairID}" class="mono font-bold text-indigo-900">--</span>
+                                        <span id="netType_${p.tokenPairID}"></span>
+                                    </div>
+                                </div>
+                                 <div class="fee-item-container">
+                                    <span class="text-xs font-bold text-indigo-400 uppercase block mb-1">Operation Fee</span>
+                                    <div>
+                                        <span id="ops_${p.tokenPairID}" class="mono font-bold text-indigo-900">--</span>
+                                        <span id="opsType_${p.tokenPairID}"></span>
+                                    </div>
                                 </div>
                             </div>
-                             <div class="fee-item-container">
-                                <span class="text-xs font-bold text-indigo-400 uppercase block mb-1">Operation Fee</span>
-                                <div>
-                                    <span id="ops_${p.tokenPairID}" class="mono font-bold text-indigo-900">--</span>
-                                    <span id="opsType_${p.tokenPairID}"></span>
-                                </div>
+                            <div class="mt-4 pt-4 border-t border-indigo-200">
+                                <details class="group">
+                                    <summary class="text-xs font-bold text-indigo-400 cursor-pointer hover:text-indigo-600 transition">
+                                        View Raw Fee JSON
+                                    </summary>
+                                    <div class="mt-2 json-block bg-indigo-900/50 text-indigo-200"><pre id="fee-json-${p.tokenPairID}">{}</pre></div>
+                                </details>
                             </div>
                         </div>
                     </div>
@@ -466,9 +494,7 @@
 
                     let fee = 'Error';
                     if (feeRes.success && feeRes.data && feeRes.data.networkFee && feeRes.data.networkFee.value) {
-                        const rawFee = feeRes.data.networkFee.value;
-                        const decimals = fromToken.decimals || 18;
-                        fee = new BigNumber(rawFee).div(new BigNumber(10).pow(decimals)).toString();
+                        fee = feeRes.data.networkFee.value;
                     } else {
                         console.error("Fee data not found in API response:", feeRes);
                     }
