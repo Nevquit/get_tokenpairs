@@ -390,7 +390,7 @@
                     const feeUrl = `${baseUrl}quotaAndFee?fromChainType=${fromChain.chainType}&toChainType=${toChain.chainType}&tokenPairID=${tokenPairID}&symbol=${symbol}`;
                     const feeRes = await fetch(feeUrl).then(r => r.json());
 
-                    const fee = feeRes.success ? feeRes.data.fee : 'Error';
+                    const fee = feeRes.success ? feeRes.data.networkFee.value : 'Error';
 
                     // Find the pair and update its fee
                     const pairIndex = selectedPairsData.findIndex(p => p.directionalID === directionalID);
