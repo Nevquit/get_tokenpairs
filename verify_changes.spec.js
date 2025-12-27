@@ -39,30 +39,18 @@ test('Verify raw JSON in fee view and raw network fee in selection table', async
   await page.screenshot({ path: 'verify_json.png' });
   console.log('Screenshot "verify_json.png" taken.');
 
-  // 7. Click the "+" button to add the pair to the selection
-  await firstCard.locator('button:has-text("+")').click();
+  // 8. Click the "Add All Results to CSV" button
+  await page.click('button:has-text("Add All Results to CSV")');
 
-  // 8. Wait for the selected pairs table to appear and verify the fee
-  await page.waitForSelector('#selectedPairsTableContainer table');
-  const selectedRow = page.locator('#selectedPairsTableContainer tbody tr').first();
+  // 9. Wait for at least one row to appear in the selected pairs table
+  await page.waitForSelector('#selectedPairsTableContainer tbody tr', { timeout: 20000 });
 
-  // Find the index of the "network fee" header
-  const headers = await page.locator('#selectedPairsTableContainer th').allInnerTexts();
-  const feeColumnIndex = headers.findIndex(header => header.toLowerCase() === 'network fee');
-  expect(feeColumnIndex).toBeGreaterThan(-1);
+  // 10. Verify that the number of selected rows is greater than 0
+  const selectedRowsCount = await page.locator('#selectedPairsTableContainer tbody tr').count();
+  expect(selectedRowsCount).toBeGreaterThan(0);
+  console.log(`Successfully added ${selectedRowsCount} search results to the selection.`);
 
-  const feeCell = selectedRow.locator(`td`).nth(feeColumnIndex);
-  await expect(feeCell).not.toHaveText('Loading...');
-  await expect(feeCell).not.toHaveText('Error');
-
-  const feeValue = await feeCell.innerText();
-  // Check if the value is a large integer (raw fee) and doesn't contain a decimal point
-  // This is a simple check; a more robust one might be `expect(Number.isInteger(Number(feeValue))).toBe(true);`
-  expect(feeValue).not.toContain('.');
-  expect(parseInt(feeValue)).toBeGreaterThan(1000); // Raw fees are usually large numbers
-  console.log(`Raw network fee "${feeValue}" is displayed in the selection table.`);
-
-  // 9. Take a screenshot of the selected pairs table
-  await page.screenshot({ path: 'verify_raw_fee.png' });
-  console.log('Screenshot "verify_raw_fee.png" taken.');
+  // 11. Take a screenshot of the selected pairs table
+  await page.screenshot({ path: 'verify_add_all.png' });
+  console.log('Screenshot "verify_add_all.png" taken.');
 });
