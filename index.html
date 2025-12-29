@@ -130,7 +130,7 @@
         let allPairs = [];
         let selectedPairsData = [];
         let manuallySwappedPairIDs = new Set();
-        let csvHeaders = ['id', 'smg', 'token_name', 'token_pair_id', 'from_chain', 'to_chain', 'from_token_address', 'to_token_address', 'from_token_tokendecimals', 'to_token_decimals', 'network_fee', 'network_fee_asset'];
+        let csvHeaders = ['id', 'smg', 'token_name', 'token_pair_id', 'from_chain', 'to_chain', 'from_token_address', 'to_token_address', 'from_token_decimals', 'to_token_decimals', 'network_fee', 'network_fee_asset'];
         let baseUrl = "https://bridge-api.wanchain.org/api/";
         let rawSmgID = '';
         let currentRenderedPairs = new Map();
@@ -574,7 +574,7 @@
                     to_chain: p.toChain.chainName,
                     from_token_address: p.fromToken.address,
                     to_token_address: p.toToken.address,
-                    from_token_tokendecimals: p.fromToken.decimals,
+                    from_token_decimals: p.fromToken.decimals,
                     to_token_decimals: p.toToken.decimals,
                     network_fee: p.network_fee,
                     network_fee_asset: p.fromChain.chainType
@@ -642,7 +642,7 @@
                     to_chain: p.toChain.chainName,
                     from_token_address: p.fromToken.address,
                     to_token_address: p.toToken.address,
-                    from_token_tokendecimals: p.fromToken.decimals,
+                    from_token_decimals: p.fromToken.decimals,
                     to_token_decimals: p.toToken.decimals,
                     network_fee: p.network_fee,
                     network_fee_asset: p.fromChain.chainType
