@@ -76,6 +76,10 @@
                     <div id="smgIDDisplay" class="text-xl font-black text-indigo-600 mono break-all">
                         --
                     </div>
+                    <div class="flex mt-4">
+                        <input type="text" id="smgIdInput" class="input-pill w-full mr-2" placeholder="Enter new SMG ID">
+                        <button onclick="updateSmgID()" class="px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition">Update</button>
+                    </div>
                 </section>
 
                 <section id="csvGenerationSection" class="mb-10">
@@ -537,6 +541,16 @@
                 manuallySwappedPairIDs.add(tokenPairID);
             }
             doFilter(); // Re-render to apply the swap state
+        }
+
+        function updateSmgID() {
+            const inputEl = document.getElementById('smgIdInput');
+            const newSmgId = inputEl.value.trim();
+            if (newSmgId) {
+                document.getElementById('smgIDDisplay').innerText = newSmgId;
+                rawSmgID = newSmgId; // Assuming rawSmgID should be updated as well for CSV export
+                inputEl.value = ''; // Clear the input after update
+            }
         }
 
         function removePairFromSelection(directionalID) {
