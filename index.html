@@ -547,8 +547,15 @@
             const inputEl = document.getElementById('smgIdInput');
             const newSmgId = inputEl.value.trim();
             if (newSmgId) {
-                document.getElementById('smgIDDisplay').innerText = newSmgId;
-                rawSmgID = newSmgId; // Assuming rawSmgID should be updated as well for CSV export
+                rawSmgID = newSmgId; // Store the raw input for CSV
+
+                // Decode for display
+                let cleanedHex = newSmgId.startsWith('0x') ? newSmgId.substring(2) : newSmgId;
+                cleanedHex = cleanedHex.replace(/^0+/, '');
+                let displaySmg = hexToUtf8(cleanedHex);
+                displaySmg = displaySmg.replace(/[\u0000-\u001F\u007F-\u009F]/g, '').trim();
+
+                document.getElementById('smgIDDisplay').innerText = displaySmg;
                 inputEl.value = ''; // Clear the input after update
             }
         }
