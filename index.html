@@ -134,7 +134,7 @@
         let allPairs = [];
         let selectedPairsData = [];
         let manuallySwappedPairIDs = new Set();
-        let csvHeaders = ['id', 'smg', 'token_name', 'token_pair_id', 'from_chain', 'to_chain', 'from_token_address', 'to_token_address', 'from_token_decimals', 'to_token_decimals', 'network_fee', 'network_fee_asset'];
+        let csvHeaders = ['id', 'smg', 'token_name', 'token_pair_id', 'from_chain', 'to_chain', 'from_token_address', 'to_token_address', 'from_token_decimals', 'to_token_decimals', 'network_fee', 'network_fee_asset', 'minServiceFee(18)'];
         let baseUrl = "https://bridge-api.wanchain.org/api/";
         let rawSmgID = '';
         let currentRenderedPairs = new Map();
@@ -500,7 +500,7 @@
                 removePairFromSelection(directionalID);
             } else {
                 // Add pair immediately for UI responsiveness
-                const newPair = { ...pair, network_fee: 'Loading...' };
+                const newPair = { ...pair, network_fee: 'Loading...', 'minServiceFee(18)': 'Loading...' };
                 selectedPairsData.push(newPair);
                 renderSelectedPairs(); // Update UI to show "Loading..."
 
@@ -511,8 +511,20 @@
                     const feeRes = await fetch(feeUrl).then(r => r.json());
 
                     let fee = 'Error';
-                    if (feeRes.success && feeRes.data && feeRes.data.networkFee && feeRes.data.networkFee.value) {
-                        fee = feeRes.data.networkFee.value;
+                    let minServiceFee = 'Error';
+
+                    if (feeRes.success && feeRes.data) {
+                        if (feeRes.data.networkFee && feeRes.data.networkFee.value) {
+                            fee = feeRes.data.networkFee.value;
+                        } else {
+                            console.error("Network fee data not found in API response:", feeRes);
+                        }
+                        if (feeRes.data.operationFee && feeRes.data.operationFee.minFeeLimit) {
+                            minServiceFee = feeRes.data.operationFee.minFeeLimit;
+                        } else {
+                            console.error("Operation fee minFeeLimit not found in API response:", feeRes);
+                            minServiceFee = 'N/A';
+                        }
                     } else {
                         console.error("Fee data not found in API response:", feeRes);
                     }
@@ -520,12 +532,14 @@
                     const pairIndex = selectedPairsData.findIndex(p => p.directionalID === directionalID);
                     if (pairIndex !== -1) {
                         selectedPairsData[pairIndex].network_fee = fee;
+                        selectedPairsData[pairIndex]['minServiceFee(18)'] = minServiceFee;
                     }
                 } catch (error) {
                     console.error('Fee fetch error:', error);
                     const pairIndex = selectedPairsData.findIndex(p => p.directionalID === directionalID);
                     if (pairIndex !== -1) {
                         selectedPairsData[pairIndex].network_fee = 'Error';
+                        selectedPairsData[pairIndex]['minServiceFee(18)'] = 'Error';
                     }
                 }
             }
@@ -598,7 +612,8 @@
                     from_token_decimals: p.fromToken.decimals,
                     to_token_decimals: p.toToken.decimals,
                     network_fee: p.network_fee,
-                    network_fee_asset: p.fromChain.chainType
+                    network_fee_asset: p.fromChain.chainType,
+                    'minServiceFee(18)': p['minServiceFee(18)']
                 };
 
                 tableHTML += '<tr class="bg-white border-b hover:bg-slate-50">';
@@ -666,7 +681,8 @@
                     from_token_decimals: p.fromToken.decimals,
                     to_token_decimals: p.toToken.decimals,
                     network_fee: p.network_fee,
-                    network_fee_asset: p.fromChain.chainType
+                    network_fee_asset: p.fromChain.chainType,
+                    'minServiceFee(18)': p['minServiceFee(18)']
                 };
 
                 let rowData = csvHeaders.map(header => {
