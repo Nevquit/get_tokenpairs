@@ -709,7 +709,33 @@
         }
 
         function generateJSON() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(selectedPairsData, null, 2));
+            const jsonData = selectedPairsData.map((p, index) => {
+                const name = getDisplayName(p.symbol);
+                const rowData = {
+                    id: index + 1,
+                    smg: rawSmgID,
+                    token_name: name,
+                    token_pair_id: p.tokenPairID,
+                    from_chain: p.fromChain.chainName,
+                    to_chain: p.toChain.chainName,
+                    from_chain_slip44_id: p.fromChain.slip44ChainID,
+                    to_chain_slip44_id: p.toChain.slip44ChainID,
+                    from_token_address: p.fromToken.address,
+                    to_token_address: p.toToken.address,
+                    from_token_decimals: p.fromToken.decimals,
+                    to_token_decimals: p.toToken.decimals,
+                    network_fee: p.network_fee,
+                    network_fee_asset: p.fromChain.chainType,
+                    'minServiceFee(18)': p['minServiceFee(18)']
+                };
+
+                const finalObject = {};
+                csvHeaders.forEach(header => {
+                    finalObject[header] = rowData[header] !== undefined ? rowData[header] : '';
+                });
+                return finalObject;
+            });
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(jsonData, null, 2));
             const downloadAnchorNode = document.createElement('a');
             downloadAnchorNode.setAttribute("href", dataStr);
             downloadAnchorNode.setAttribute("download", "token_pairs.json");
