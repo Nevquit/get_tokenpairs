@@ -95,10 +95,10 @@
                             <div class="mt-2">
                                 <button onclick="addEvmHeaders()" class="px-3 py-1 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition text-xs">Add EVM Headers</button>
                                 <button onclick="addCardanoHeaders()" class="px-3 py-1 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition text-xs ml-2">Add Cardano Headers</button>
+                                <button onclick="resetCsvHeaders()" class="px-3 py-1 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition text-xs ml-2">Reset Headers</button>
                             </div>
                         </div>
                         <button onclick="generateCSV()" class="px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition">Generate CSV</button>
-                        <button onclick="generateJSON()" class="px-4 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition ml-2">Generate JSON</button>
                     </div>
                 </section>
 
@@ -139,7 +139,8 @@
         let allPairs = [];
         let selectedPairsData = [];
         let manuallySwappedPairIDs = new Set();
-        let csvHeaders = ['id', 'smg', 'token_name', 'token_pair_id', 'from_chain', 'to_chain', 'from_chain_slip44_id', 'to_chain_slip44_id', 'from_token_address', 'to_token_address', 'from_token_decimals', 'to_token_decimals', 'network_fee', 'network_fee_asset', 'minServiceFee(18)'];
+        const defaultCsvHeaders = ['id', 'smg', 'token_name', 'token_pair_id', 'from_chain', 'to_chain', 'from_chain_slip44_id', 'to_chain_slip44_id', 'from_token_address', 'to_token_address', 'from_token_decimals', 'to_token_decimals', 'network_fee', 'network_fee_asset', 'minServiceFee(18)'];
+        let csvHeaders = [...defaultCsvHeaders];
         let baseUrl = "https://bridge-api.wanchain.org/api/";
         let rawSmgID = '';
         let currentRenderedPairs = new Map();
@@ -683,6 +684,12 @@
             renderSelectedPairs();
         }
 
+        function resetCsvHeaders() {
+            csvHeaders = [...defaultCsvHeaders];
+            renderCsvHeaders();
+            renderSelectedPairs();
+        }
+
         function renderCsvHeaders() {
             const container = document.getElementById('csvHeadersContainer');
             container.innerHTML = csvHeaders.map(header => `
@@ -732,42 +739,6 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-        }
-
-        function generateJSON() {
-            const jsonData = selectedPairsData.map((p, index) => {
-                const name = getDisplayName(p.symbol);
-                const rowData = {
-                    id: index + 1,
-                    smg: rawSmgID,
-                    token_name: name,
-                    token_pair_id: p.tokenPairID,
-                    from_chain: p.fromChain.chainName,
-                    to_chain: p.toChain.chainName,
-                    from_chain_slip44_id: p.fromChain.slip44ChainID,
-                    to_chain_slip44_id: p.toChain.slip44ChainID,
-                    from_token_address: p.fromToken.address,
-                    to_token_address: p.toToken.address,
-                    from_token_decimals: p.fromToken.decimals,
-                    to_token_decimals: p.toToken.decimals,
-                    network_fee: p.network_fee,
-                    network_fee_asset: p.fromChain.chainType,
-                    'minServiceFee(18)': p['minServiceFee(18)']
-                };
-
-                const finalObject = {};
-                csvHeaders.forEach(header => {
-                    finalObject[header] = rowData[header] !== undefined ? rowData[header] : '';
-                });
-                return finalObject;
-            });
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(jsonData, null, 2));
-            const downloadAnchorNode = document.createElement('a');
-            downloadAnchorNode.setAttribute("href", dataStr);
-            downloadAnchorNode.setAttribute("download", "token_pairs.json");
-            document.body.appendChild(downloadAnchorNode); // required for firefox
-            downloadAnchorNode.click();
-            downloadAnchorNode.remove();
         }
 
         function toggleTool() { document.getElementById('hexTool').classList.toggle('hidden'); }
