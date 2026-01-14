@@ -92,6 +92,10 @@
                                 <input type="text" id="newHeaderInput" class="input-pill w-full mr-2" placeholder="Add new header">
                                 <button onclick="addCsvHeader()" class="px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition">Add</button>
                             </div>
+                            <div class="mt-2">
+                                <button onclick="addEvmHeaders()" class="px-3 py-1 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition text-xs">Add EVM Headers</button>
+                                <button onclick="addCardanoHeaders()" class="px-3 py-1 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition text-xs ml-2">Add Cardano Headers</button>
+                            </div>
                         </div>
                         <button onclick="generateCSV()" class="px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition">Generate CSV</button>
                         <button onclick="generateJSON()" class="px-4 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition ml-2">Generate JSON</button>
@@ -649,6 +653,28 @@
                 renderCsvHeaders();
                 renderSelectedPairs();
             }
+        }
+
+        function addEvmHeaders() {
+            const evmHeaders = ['from_coin_decimals', 'cross_amount(eth)', 'required_native_coin(wei)'];
+            evmHeaders.forEach(header => {
+                if (!csvHeaders.includes(header)) {
+                    csvHeaders.push(header);
+                }
+            });
+            renderCsvHeaders();
+            renderSelectedPairs();
+        }
+
+        function addCardanoHeaders() {
+            const cardanoHeaders = ['bridge_type', 'cross_type', 'cross_amount(eth)', 'to_address', 'required_token(wei)', 'required_ada'];
+            cardanoHeaders.forEach(header => {
+                if (!csvHeaders.includes(header)) {
+                    csvHeaders.push(header);
+                }
+            });
+            renderCsvHeaders();
+            renderSelectedPairs();
         }
 
         function removeCsvHeader(header) {
