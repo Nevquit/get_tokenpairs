@@ -139,7 +139,7 @@
         let allPairs = [];
         let selectedPairsData = [];
         let manuallySwappedPairIDs = new Set();
-        const defaultCsvHeaders = ['id', 'smg', 'token_name', 'token_pair_id', 'from_chain', 'to_chain', 'from_chain_slip44_id', 'to_chain_slip44_id', 'from_token_address', 'to_token_address', 'from_token_decimals', 'to_token_decimals', 'network_fee', 'network_fee_asset', 'minServiceFee(18)'];
+        const defaultCsvHeaders = ['id', 'smg', 'token_name', 'token_pair_id', 'from_chain', 'to_chain', 'from_chain_slip44_id', 'to_chain_slip44_id', 'from_token_address', 'to_token_address', 'from_token_decimals', 'to_token_decimals', 'network_fee', 'network_fee_asset', 'minServiceFee(wei)'];
         let csvHeaders = [...defaultCsvHeaders];
         let baseUrl = "https://bridge-api.wanchain.org/api/";
         let rawSmgID = '';
@@ -148,6 +148,25 @@
         const shortenAddress = (address) => {
             if (typeof address !== 'string' || address.length < 10) return address;
             return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+        };
+
+        const toEth = (wei, decimals) => {
+            if (!wei || isNaN(wei) || wei === 'Error' || wei === 'Loading...') return wei;
+            try {
+                let totalWei = BigInt(wei) + 10n;
+                let s = totalWei.toString();
+                let d = parseInt(decimals);
+                if (isNaN(d) || d < 0) return s;
+                if (d === 0) return s;
+                if (s.length <= d) {
+                    s = s.padStart(d + 1, '0');
+                }
+                const integerPart = s.slice(0, -d);
+                const fractionalPart = s.slice(-d);
+                return `${integerPart}.${fractionalPart}`;
+            } catch (e) {
+                return 'Error';
+            }
         };
 
         const hexToUtf8 = s => { try { return decodeURIComponent(s.replace(/\s+/g, '').replace(/[0-9a-f]{2}/g, '%$&')); } catch(e) { return s; } };
@@ -506,7 +525,7 @@
                 removePairFromSelection(directionalID);
             } else {
                 // Add pair immediately for UI responsiveness
-                const newPair = { ...pair, network_fee: 'Loading...', 'minServiceFee(18)': 'Loading...' };
+                const newPair = { ...pair, network_fee: 'Loading...', 'minServiceFee(wei)': 'Loading...' };
                 selectedPairsData.push(newPair);
                 renderSelectedPairs(); // Update UI to show "Loading..."
 
@@ -538,14 +557,14 @@
                     const pairIndex = selectedPairsData.findIndex(p => p.directionalID === directionalID);
                     if (pairIndex !== -1) {
                         selectedPairsData[pairIndex].network_fee = fee;
-                        selectedPairsData[pairIndex]['minServiceFee(18)'] = minServiceFee;
+                        selectedPairsData[pairIndex]['minServiceFee(wei)'] = minServiceFee;
                     }
                 } catch (error) {
                     console.error('Fee fetch error:', error);
                     const pairIndex = selectedPairsData.findIndex(p => p.directionalID === directionalID);
                     if (pairIndex !== -1) {
                         selectedPairsData[pairIndex].network_fee = 'Error';
-                        selectedPairsData[pairIndex]['minServiceFee(18)'] = 'Error';
+                        selectedPairsData[pairIndex]['minServiceFee(wei)'] = 'Error';
                     }
                 }
             }
@@ -621,7 +640,8 @@
                     to_token_decimals: p.toToken.decimals,
                     network_fee: p.network_fee,
                     network_fee_asset: p.fromChain.chainType,
-                    'minServiceFee(18)': p['minServiceFee(18)']
+                    'minServiceFee(wei)': p['minServiceFee(wei)'],
+                    'cross_amount(eth)': toEth(p['minServiceFee(wei)'], p.fromToken.decimals)
                 };
 
                 tableHTML += '<tr class="bg-white border-b hover:bg-slate-50">';
@@ -720,7 +740,8 @@
                     to_token_decimals: p.toToken.decimals,
                     network_fee: p.network_fee,
                     network_fee_asset: p.fromChain.chainType,
-                    'minServiceFee(18)': p['minServiceFee(18)']
+                    'minServiceFee(wei)': p['minServiceFee(wei)'],
+                    'cross_amount(eth)': toEth(p['minServiceFee(wei)'], p.fromToken.decimals)
                 };
 
                 let rowData = csvHeaders.map(header => {
