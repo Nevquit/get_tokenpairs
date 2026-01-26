@@ -657,7 +657,7 @@
         }
 
         function addEvmHeaders() {
-            const evmHeaders = ['from_coin_decimals', 'cross_amount(eth)', 'required_native_coin(wei)'];
+            const evmHeaders = ['from_coin_decimals', 'cross_amount(eth)', 'required_native_coin(wei)', 'to_address', 'bridge_type'];
             evmHeaders.forEach(header => {
                 if (!csvHeaders.includes(header)) {
                     csvHeaders.push(header);
