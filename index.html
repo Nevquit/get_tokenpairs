@@ -154,6 +154,9 @@
         let selectedPairsData = [];
         let manuallySwappedPairIDs = new Set();
         const defaultCsvHeaders = ['id', 'smg', 'token_name', 'token_pair_id', 'from_chain', 'to_chain', 'from_chain_slip44_id', 'to_chain_slip44_id', 'from_token_address', 'to_token_address', 'from_token_decimals', 'to_token_decimals', 'network_fee', 'network_fee_asset', 'minServiceFee(wei)', 'cross_amount(eth)'];
+        const evmHeadersSet = ['from_coin_decimals', 'cross_amount(eth)', 'required_native_coin(wei)', 'to_address', 'bridge_type'];
+        const cardanoHeadersSet = ['bridge_type', 'cross_type', 'cross_amount(eth)', 'to_address', 'required_token(wei)', 'required_ada'];
+        const allRecognizedHeaders = [...new Set([...defaultCsvHeaders, ...evmHeadersSet, ...cardanoHeadersSet])];
         let csvHeaders = [...defaultCsvHeaders];
         let baseUrl = "https://bridge-api.wanchain.org/api/";
         let rawSmgID = '';
@@ -655,6 +658,7 @@
                 }
 
                 const row = {
+                    ...p,
                     id: index + 1,
                     smg: displaySmg,
                     token_name: name,
@@ -706,8 +710,7 @@
         }
 
         function addEvmHeaders() {
-            const evmHeaders = ['from_coin_decimals', 'cross_amount(eth)', 'required_native_coin(wei)', 'to_address', 'bridge_type'];
-            evmHeaders.forEach(header => {
+            evmHeadersSet.forEach(header => {
                 if (!csvHeaders.includes(header)) {
                     csvHeaders.push(header);
                 }
@@ -717,8 +720,7 @@
         }
 
         function addCardanoHeaders() {
-            const cardanoHeaders = ['bridge_type', 'cross_type', 'cross_amount(eth)', 'to_address', 'required_token(wei)', 'required_ada'];
-            cardanoHeaders.forEach(header => {
+            cardanoHeadersSet.forEach(header => {
                 if (!csvHeaders.includes(header)) {
                     csvHeaders.push(header);
                 }
@@ -755,6 +757,7 @@
             selectedPairsData.forEach((p, index) => {
                 const name = getDisplayName(p.symbol);
                 const row = {
+                    ...p,
                     id: index + 1,
                     smg: p.smg_raw || rawSmgID,
                     token_name: name,
@@ -852,6 +855,16 @@
             const headers = rows[0].map(h => h.trim().toLowerCase().replace(/ /g, '_'));
             const dataRows = rows.slice(1);
 
+            // Add recognized headers to active csvHeaders
+            let headersAdded = false;
+            headers.forEach(h => {
+                if (allRecognizedHeaders.includes(h) && !csvHeaders.includes(h)) {
+                    csvHeaders.push(h);
+                    headersAdded = true;
+                }
+            });
+            if (headersAdded) renderCsvHeaders();
+
             // Fetch current SMG ID globally
             await fetchSmgID();
 
@@ -912,6 +925,8 @@
                 }
 
                 // 4. Update data
+                // Store all CSV row data in the pair object to preserve recognized columns
+                Object.assign(targetPair, rowData);
                 if (rowData.smg) targetPair.smg_raw = rowData.smg;
 
                 // Fetch current network fee and service fee from API
