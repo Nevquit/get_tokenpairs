@@ -153,7 +153,7 @@
         let allPairs = [];
         let selectedPairsData = [];
         let manuallySwappedPairIDs = new Set();
-        const defaultCsvHeaders = ['id', 'smg', 'token_name', 'token_pair_id', 'from_chain', 'to_chain', 'from_chain_slip44_id', 'to_chain_slip44_id', 'from_token_address', 'to_token_address', 'from_token_decimals', 'to_token_decimals', 'network_fee', 'network_fee_asset', 'minServiceFee(wei)'];
+        const defaultCsvHeaders = ['id', 'smg', 'token_name', 'token_pair_id', 'from_chain', 'to_chain', 'from_chain_slip44_id', 'to_chain_slip44_id', 'from_token_address', 'to_token_address', 'from_token_decimals', 'to_token_decimals', 'network_fee', 'network_fee_asset', 'minServiceFee(wei)', 'cross_amount(eth)'];
         let csvHeaders = [...defaultCsvHeaders];
         let baseUrl = "https://bridge-api.wanchain.org/api/";
         let rawSmgID = '';
@@ -846,8 +846,11 @@
             const headers = rows[0].map(h => h.trim().toLowerCase().replace(/ /g, '_'));
             const dataRows = rows.slice(1);
 
+            // Fetch current SMG ID globally
+            await fetchSmgID();
+
             let updatedCount = 0;
-            dataRows.forEach(row => {
+            const updatePromises = dataRows.map(async (row) => {
                 const rowData = {};
                 headers.forEach((h, i) => {
                     rowData[h] = row[i];
@@ -861,24 +864,40 @@
 
                 const targetPair = selectedPairsData.find(p =>
                     String(p.tokenPairID) === String(tokenPairID) &&
-                    p.fromChain.chainName.toLowerCase() === fromChain.toLowerCase() &&
-                    p.toChain.chainName.toLowerCase() === toChain.toLowerCase()
+                    p.fromChain.chainName.toLowerCase() === fromChain.trim().toLowerCase() &&
+                    p.toChain.chainName.toLowerCase() === toChain.trim().toLowerCase()
                 );
 
                 if (targetPair) {
                     if (rowData.smg) targetPair.smg_raw = rowData.smg;
-                    if (rowData.network_fee) targetPair.network_fee = rowData.network_fee;
 
-                    const serviceFee = rowData['minservicefee(wei)'] || rowData.servicefee;
-                    if (serviceFee) targetPair['minServiceFee(wei)'] = serviceFee;
+                    // Fetch current network fee and service fee from API
+                    try {
+                        const cleanSymbol = getDisplayName(targetPair.symbol);
+                        const feeUrl = `${baseUrl}quotaAndFee?fromChainType=${targetPair.fromChain.chainType}&toChainType=${targetPair.toChain.chainType}&tokenPairID=${targetPair.tokenPairID}&symbol=${cleanSymbol}`;
+                        const feeRes = await fetch(feeUrl).then(r => r.json());
+
+                        if (feeRes.success && feeRes.data) {
+                            if (feeRes.data.networkFee && feeRes.data.networkFee.value) {
+                                targetPair.network_fee = feeRes.data.networkFee.value;
+                            }
+                            if (feeRes.data.operationFee && feeRes.data.operationFee.minFeeLimit) {
+                                targetPair['minServiceFee(wei)'] = feeRes.data.operationFee.minFeeLimit;
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Error fetching fee during bulk update:', e);
+                    }
 
                     updatedCount++;
                 }
             });
 
+            await Promise.all(updatePromises);
+
             if (updatedCount > 0) {
                 renderSelectedPairs();
-                alert(`Updated ${updatedCount} cases.`);
+                alert(`Updated ${updatedCount} cases from API.`);
             } else {
                 alert('No matching cases found in the current selection.');
             }
