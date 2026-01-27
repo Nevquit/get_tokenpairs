@@ -850,56 +850,91 @@
             await fetchSmgID();
 
             let updatedCount = 0;
-            const updatePromises = dataRows.map(async (row) => {
+            for (const row of dataRows) {
                 const rowData = {};
                 headers.forEach((h, i) => {
                     rowData[h] = row[i];
                 });
 
                 const tokenPairID = rowData.token_pair_id;
-                const fromChain = rowData.from_chain;
-                const toChain = rowData.to_chain;
+                const fromChainName = (rowData.from_chain || '').trim().toLowerCase();
+                const toChainName = (rowData.to_chain || '').trim().toLowerCase();
 
-                if (!tokenPairID || !fromChain || !toChain) return;
+                if (!tokenPairID || !fromChainName || !toChainName) continue;
 
-                const targetPair = selectedPairsData.find(p =>
-                    String(p.tokenPairID) === String(tokenPairID) &&
-                    p.fromChain.chainName.toLowerCase() === fromChain.trim().toLowerCase() &&
-                    p.toChain.chainName.toLowerCase() === toChain.trim().toLowerCase()
-                );
+                // 1. Find matching pair in allPairs pool
+                const pairFromPool = allPairs.find(p => String(p.tokenPairID) === String(tokenPairID));
+                if (!pairFromPool) continue;
 
-                if (targetPair) {
-                    if (rowData.smg) targetPair.smg_raw = rowData.smg;
+                // 2. Determine direction
+                let finalFromChain, finalToChain, finalFromToken, finalToToken;
+                const isStraight = pairFromPool.fromChain.chainName.toLowerCase() === fromChainName &&
+                                 pairFromPool.toChain.chainName.toLowerCase() === toChainName;
+                const isReverse = pairFromPool.fromChain.chainName.toLowerCase() === toChainName &&
+                                pairFromPool.toChain.chainName.toLowerCase() === fromChainName;
 
-                    // Fetch current network fee and service fee from API
-                    try {
-                        const cleanSymbol = getDisplayName(targetPair.symbol);
-                        const feeUrl = `${baseUrl}quotaAndFee?fromChainType=${targetPair.fromChain.chainType}&toChainType=${targetPair.toChain.chainType}&tokenPairID=${targetPair.tokenPairID}&symbol=${cleanSymbol}`;
-                        const feeRes = await fetch(feeUrl).then(r => r.json());
-
-                        if (feeRes.success && feeRes.data) {
-                            if (feeRes.data.networkFee && feeRes.data.networkFee.value) {
-                                targetPair.network_fee = feeRes.data.networkFee.value;
-                            }
-                            if (feeRes.data.operationFee && feeRes.data.operationFee.minFeeLimit) {
-                                targetPair['minServiceFee(wei)'] = feeRes.data.operationFee.minFeeLimit;
-                            }
-                        }
-                    } catch (e) {
-                        console.error('Error fetching fee during bulk update:', e);
-                    }
-
-                    updatedCount++;
+                if (isStraight) {
+                    finalFromChain = pairFromPool.fromChain;
+                    finalToChain = pairFromPool.toChain;
+                    finalFromToken = pairFromPool.fromToken;
+                    finalToToken = pairFromPool.toToken;
+                } else if (isReverse) {
+                    finalFromChain = pairFromPool.toChain;
+                    finalToChain = pairFromPool.fromChain;
+                    finalFromToken = pairFromPool.toToken;
+                    finalToToken = pairFromPool.fromToken;
+                } else {
+                    continue; // No matching direction
                 }
-            });
 
-            await Promise.all(updatePromises);
+                const directionalID = `${tokenPairID}_${finalFromChain.chainName}_${finalToChain.chainName}`;
+
+                // 3. Find if already selected, if not add it
+                let targetPair = selectedPairsData.find(p => p.directionalID === directionalID);
+                if (!targetPair) {
+                    targetPair = {
+                        ...pairFromPool,
+                        fromChain: finalFromChain,
+                        toChain: finalToChain,
+                        fromToken: finalFromToken,
+                        toToken: finalToToken,
+                        directionalID,
+                        network_fee: 'Loading...',
+                        'minServiceFee(wei)': 'Loading...'
+                    };
+                    selectedPairsData.push(targetPair);
+                }
+
+                // 4. Update data
+                if (rowData.smg) targetPair.smg_raw = rowData.smg;
+
+                // Fetch current network fee and service fee from API
+                try {
+                    const cleanSymbol = getDisplayName(targetPair.symbol);
+                    const feeUrl = `${baseUrl}quotaAndFee?fromChainType=${targetPair.fromChain.chainType}&toChainType=${targetPair.toChain.chainType}&tokenPairID=${targetPair.tokenPairID}&symbol=${cleanSymbol}`;
+                    const feeRes = await fetch(feeUrl).then(r => r.json());
+
+                    if (feeRes.success && feeRes.data) {
+                        if (feeRes.data.networkFee && feeRes.data.networkFee.value) {
+                            targetPair.network_fee = feeRes.data.networkFee.value;
+                        }
+                        if (feeRes.data.operationFee && feeRes.data.operationFee.minFeeLimit) {
+                            targetPair['minServiceFee(wei)'] = feeRes.data.operationFee.minFeeLimit;
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error fetching fee during bulk update:', e);
+                }
+
+                updatedCount++;
+            }
 
             if (updatedCount > 0) {
                 renderSelectedPairs();
-                alert(`Updated ${updatedCount} cases from API.`);
+                doFilter(); // Update card buttons
+                alert(`Processed ${updatedCount} cases from CSV.`);
             } else {
-                alert('No matching cases found in the current selection.');
+                alert('No matching cases found in the data pool.');
             }
             fileInput.value = '';
         }
