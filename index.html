@@ -602,6 +602,11 @@
             if (newSmgId) {
                 rawSmgID = newSmgId; // Store the raw input for CSV
 
+                // Update smg_raw for all selected pairs
+                selectedPairsData.forEach(p => {
+                    p.smg_raw = newSmgId;
+                });
+
                 // Decode for display
                 let cleanedHex = newSmgId.startsWith('0x') ? newSmgId.substring(2) : newSmgId;
                 cleanedHex = cleanedHex.replace(/^0+/, '');
@@ -610,6 +615,7 @@
 
                 document.getElementById('smgIDDisplay').innerText = displaySmg;
                 inputEl.value = ''; // Clear the input after update
+                renderSelectedPairs(); // Refresh the table
             }
         }
 
