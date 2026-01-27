@@ -14,21 +14,19 @@
         .suggest-list { position: absolute; top: calc(100% + 5px); left: 0; right: 0; background: white; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); z-index: 100; max-height: 240px; overflow-y: auto; display: none; }
         .suggest-item { padding: 12px 18px; cursor: pointer; font-size: 14px; transition: all 0.2s; }
         .suggest-item:hover { background: #f1f5f9; color: #4f46e5; font-weight: 600; }
-        .fee-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px dashed #e2e8f0; }
-        .fee-item:last-child { border-bottom: none; }
         .json-block { background: #1e293b; color: #94a3b8; border-radius: 12px; padding: 20px; font-size: 13px; line-height: 1.6; overflow-x: auto; }
         .result-card { background: white; border-radius: 24px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); margin-bottom: 24px; }
         .badge-pct { background: #e0e7ff; color: #4338ca; font-size: 10px; padding: 2px 6px; border-radius: 6px; font-weight: 800; margin-left: 4px; vertical-align: middle; }
-        .header-pill { background-color: #e0e7ff; color: #4338ca; padding: 4px 8px; border-radius: 8px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; margin-right: 8px; margin-bottom: 8px; }
-        .header-pill button { margin-left: 8px; background: none; border: none; cursor: pointer; color: #4338ca; font-weight: 800; }
+        .header-pill { background-color: #e0e7ff; color: #4338ca; padding: 4px 12px; border-radius: 10px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; border: 1px solid #c7d2fe; }
+        .header-pill button { margin-left: 8px; color: #ef4444; }
         table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 8px; border: 1px solid #e2e8f0; text-align: left; }
-        th { background-color: #f1f5f9; }
+        th, td { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; text-align: left; }
+        th { background-color: #f8fafc; font-weight: 900; color: #64748b; text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em; }
     </style>
 </head>
 <body class="p-4 md:p-8">
 
-    <div class="max-w-7xl mx-auto">
+    <div class="max-w-[1600px] mx-auto">
         <header class="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
             <h1 class="text-3xl font-black tracking-tight">WAN BRIDGE <span class="text-indigo-600">HUB</span></h1>
             <div class="bg-white border-2 border-slate-200 p-1 rounded-2xl flex shadow-sm">
@@ -37,8 +35,8 @@
             </div>
         </header>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div>
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
+            <div class="md:col-span-7">
                 <section class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 mb-10">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div class="suggest-container">
@@ -70,8 +68,8 @@
                 <div id="resultsList" class="space-y-8"></div>
             </div>
 
-            <div>
-                <section class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 mb-10">
+            <div class="md:col-span-5 space-y-8">
+                <section class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 sticky top-8">
                     <label class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1">当前 SMG ID</label>
                     <div id="smgIDDisplay" class="text-xl font-black text-indigo-600 mono break-all">
                         --
@@ -80,50 +78,51 @@
                         <input type="text" id="smgIdInput" class="input-pill w-full mr-2" placeholder="Enter new SMG ID">
                         <button onclick="updateSmgID()" class="px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition">Update</button>
                     </div>
-                </section>
 
-                <section id="csvGenerationSection" class="mb-10">
-                    <h2 class="text-2xl font-bold mb-4">CSV Generation</h2>
-                    <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-100">
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-slate-700 mb-2">CSV Headers</label>
-                            <div id="csvHeadersContainer" class="mb-2"></div>
-                            <div class="flex">
-                                <input type="text" id="newHeaderInput" class="input-pill w-full mr-2" placeholder="Add new header">
-                                <button onclick="addCsvHeader()" class="px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition">Add</button>
+                    <div class="mt-10">
+                        <h2 class="text-xl font-bold mb-4">CSV Generation</h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">CSV Headers</label>
+                                <div id="csvHeadersContainer" class="flex flex-wrap gap-2 mb-4"></div>
+                                <div class="flex gap-2">
+                                    <input type="text" id="newHeaderInput" class="input-pill w-full" placeholder="Add new header">
+                                    <button onclick="addCsvHeader()" class="px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition">Add</button>
+                                </div>
+                                <div class="mt-4 flex flex-wrap gap-2">
+                                    <button onclick="addEvmHeaders()" class="px-3 py-1.5 bg-slate-100 text-slate-600 font-bold rounded-lg hover:bg-slate-200 transition text-xs">Add EVM Headers</button>
+                                    <button onclick="addCardanoHeaders()" class="px-3 py-1.5 bg-slate-100 text-slate-600 font-bold rounded-lg hover:bg-slate-200 transition text-xs">Add Cardano Headers</button>
+                                    <button onclick="resetCsvHeaders()" class="px-3 py-1.5 bg-rose-50 text-rose-600 font-bold rounded-lg hover:bg-rose-100 transition text-xs">Reset Headers</button>
+                                </div>
                             </div>
-                            <div class="mt-2">
-                                <button onclick="addEvmHeaders()" class="px-3 py-1 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition text-xs">Add EVM Headers</button>
-                                <button onclick="addCardanoHeaders()" class="px-3 py-1 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition text-xs ml-2">Add Cardano Headers</button>
-                                <button onclick="resetCsvHeaders()" class="px-3 py-1 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition text-xs ml-2">Reset Headers</button>
-                            </div>
-                        </div>
-                        <button onclick="generateCSV()" class="px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition">Generate CSV</button>
-                    </div>
-                </section>
-
-                <section id="caseUpdateSection" class="mb-10">
-                    <h2 class="text-2xl font-bold mb-4">Case Update</h2>
-                    <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-100">
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-slate-700 mb-2">Import CSV to Update Cases</label>
-                            <div class="flex">
-                                <input type="file" id="caseUpdateInput" accept=".csv" class="input-pill w-full mr-2 p-2 text-sm">
-                                <button onclick="handleCaseUpdate()" class="px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition">Update</button>
-                            </div>
-                            <p class="text-xs text-slate-400 mt-2 italic">Matches by token_pair_id, from_chain, and to_chain. Updates smg, network_fee, servicefee, and cross_amount.</p>
+                            <button onclick="generateCSV()" class="w-full py-4 bg-indigo-600 text-white font-black rounded-2xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-100">GENERATE CSV / JSON</button>
                         </div>
                     </div>
-                </section>
 
-                <section id="selectedPairsSection" class="mb-10">
-                    <h2 class="text-2xl font-bold mb-4">Selected Token Pairs</h2>
-                    <div id="selectedPairsTableContainer" class="bg-white p-4 rounded-lg shadow-sm border border-slate-100">
-                        <!-- Selected token pairs table will be displayed here -->
+                    <div class="mt-10 pt-10 border-t border-slate-100">
+                        <h2 class="text-xl font-bold mb-4">Case Update</h2>
+                        <div class="space-y-4">
+                            <label class="block text-sm font-medium text-slate-700">Import CSV to Update Cases</label>
+                            <div class="flex gap-2">
+                                <input type="file" id="caseUpdateInput" accept=".csv" class="input-pill w-full text-sm">
+                                <button onclick="handleCaseUpdate()" class="px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition">Import</button>
+                            </div>
+                            <p class="text-xs text-slate-400 italic">Matches by token_pair_id, from_chain, and to_chain. Updates smg, network_fee, minServiceFee(wei), and cross_amount(eth).</p>
+                        </div>
                     </div>
                 </section>
             </div>
         </div>
+
+        <section id="selectedPairsSection" class="mt-16 mb-20">
+            <div class="flex justify-between items-end mb-6">
+                <h2 class="text-3xl font-black tracking-tight">SELECTED <span class="text-indigo-600">TOKEN PAIRS</span></h2>
+                <span class="text-sm font-bold text-slate-400" id="selectedCount">0 PAIRS SELECTED</span>
+            </div>
+            <div id="selectedPairsTableContainer" class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
+                <div class="text-center py-20"><p class="text-slate-400 font-medium">No token pairs selected.</p></div>
+            </div>
+        </section>
     </div>
 
     <div id="hexTool" class="fixed bottom-24 right-8 w-96 bg-white rounded-3xl shadow-2xl border border-slate-200 hidden z-50 overflow-hidden">
@@ -167,6 +166,20 @@
             return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
         };
 
+        function toggleAddressEncoding(elementId, buttonEl) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            const originalAddress = el.dataset.originalAddress;
+            const currentText = el.innerText;
+            if (currentText === originalAddress) {
+                el.innerText = hexToUtf8(originalAddress);
+                buttonEl.innerText = '编码';
+            } else {
+                el.innerText = originalAddress;
+                buttonEl.innerText = '解码';
+            }
+        }
+
         const toEth = (wei, decimals) => {
             if (!wei || isNaN(wei) || wei === 'Error' || wei === 'Loading...') return wei;
             try {
@@ -194,12 +207,9 @@
             if (decoded === symbol) {
                 return symbol;
             }
-            // Check for non-printable ASCII characters to avoid showing garbage
             for (let i = 0; i < decoded.length; i++) {
                 const charCode = decoded.charCodeAt(i);
-                if (charCode < 32 || charCode > 126) {
-                    return symbol;
-                }
+                if (charCode < 32 || charCode > 126) return symbol;
             }
             return decoded;
         };
@@ -208,55 +218,27 @@
             const box = document.getElementById(boxId);
             box.classList.remove('hidden');
             const jsonEl = document.getElementById(`fee-json-${id}`);
-
             const fields = ['min', 'max', 'net', 'ops'];
-            fields.forEach(fld => {
-                const el = document.getElementById(`${fld}_${id}`);
-                if(el) el.innerText = "加载中...";
-            });
+            fields.forEach(fld => { const el = document.getElementById(`${fld}_${id}`); if(el) el.innerText = "加载中..."; });
             jsonEl.innerText = 'Loading...';
-
             try {
                 const url = `${baseUrl}quotaAndFee?fromChainType=${f}&toChainType=${t}&tokenPairID=${id}&symbol=${symbol}`;
                 const response = await fetch(url);
-                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
                 const res = await response.json();
-
-                // Display raw JSON
                 jsonEl.innerText = JSON.stringify(res, null, 2);
-
-                if (!res.success || !res.data) {
-                    throw new Error('API returned success:false or no data.');
-                }
+                if (!res.success || !res.data) throw new Error('API Error');
                 const d = res.data;
-
-                // 填充 Quota
                 document.getElementById(`min_${id}`).innerText = d.minQuota || "0";
                 document.getElementById(`max_${id}`).innerText = d.maxQuota || "无上限";
-
-                // 填充 Network Fee
                 const netV = typeof d.networkFee === 'object' ? d.networkFee.value : d.networkFee;
                 document.getElementById(`net_${id}`).innerText = netV;
-                if (d.networkFee) {
-                    document.getElementById(`netType_${id}`).innerHTML = d.networkFee.isPercent ? '<span class="badge-pct">百分比</span>' : '';
-                }
-
-                // 填充 Operation Fee
+                if (d.networkFee) document.getElementById(`netType_${id}`).innerHTML = d.networkFee.isPercent ? '<span class="badge-pct">百分比</span>' : '';
                 const opsV = typeof d.operationFee === 'object' ? d.operationFee.value : d.operationFee;
                 document.getElementById(`ops_${id}`).innerText = opsV;
-                if (d.operationFee) {
-                    document.getElementById(`opsType_${id}`).innerHTML = d.operationFee.isPercent ? '<span class="badge-pct">百分比</span>' : '';
-                }
-
+                if (d.operationFee) document.getElementById(`opsType_${id}`).innerHTML = d.operationFee.isPercent ? '<span class="badge-pct">百分比</span>' : '';
             } catch (e) {
-                console.error('Error in getQuotaAndFee:', e);
                 jsonEl.innerText = JSON.stringify({ error: e.message }, null, 2);
-                fields.forEach(fld => {
-                    const el = document.getElementById(`${fld}_${id}`);
-                    if(el) el.innerText = "Error";
-                });
+                fields.forEach(fld => { const el = document.getElementById(`${fld}_${id}`); if(el) el.innerText = "Error"; });
             }
         }
 
@@ -264,7 +246,7 @@
             const statusDot = document.getElementById('statusDot');
             const statusText = document.getElementById('statusText');
             statusDot.className = "w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse";
-            statusText.innerText = "正在更新数据池...";
+            statusText.innerText = "正在同步数据...";
             try {
                 const res = await fetch(baseUrl + "tokenPairs").then(r => r.json());
                 allPairs = res.data || [];
@@ -299,205 +281,142 @@
             const valA = document.getElementById('chainA').value.trim().toLowerCase();
             const valB = document.getElementById('chainB').value.trim().toLowerCase();
             if (!asset && !valA && !valB) { document.getElementById('resultsList').innerHTML = ""; return; }
-
             const matches = allPairs.map(p => {
                 const sym = (p.symbol || "").toLowerCase();
                 const symUtf8 = hexToUtf8(p.symbol).toLowerCase();
                 const fromC = (p.fromChain.chainName || "").toLowerCase();
                 const toC = (p.toChain.chainName || "").toLowerCase();
                 const assetMatch = !asset || sym.includes(asset) || symUtf8.includes(asset);
-
                 if (!assetMatch) return null;
-
-                // Case 1: Both networks are specified
                 if (valA && valB) {
-                    const straightMatch = fromC.includes(valA) && toC.includes(valB);
-                    const reverseMatch = fromC.includes(valB) && toC.includes(valA);
-                    if (straightMatch) return { ...p, _isSwapped: false };
-                    if (reverseMatch) return { ...p, _isSwapped: true };
-                }
-                // Case 2: Only one network is specified
-                else if (valA || valB) {
+                    if (fromC.includes(valA) && toC.includes(valB)) return { ...p, _isSwapped: false };
+                    if (fromC.includes(valB) && toC.includes(valA)) return { ...p, _isSwapped: true };
+                } else if (valA || valB) {
                     const singleTerm = valA || valB;
                     if (fromC.includes(singleTerm)) return { ...p, _isSwapped: false };
                     if (toC.includes(singleTerm)) return { ...p, _isSwapped: true };
-                }
-                // Case 3: Only asset is specified
-                else if (asset) {
-                     return { ...p, _isSwapped: false };
-                }
-
+                } else if (asset) return { ...p, _isSwapped: false };
                 return null;
             }).filter(Boolean);
-
             renderResults(matches);
-        }
-
-        function renderCard(p, isSearchSwapped = false) {
-            const name = getDisplayName(p.symbol);
-
-            // Determine the final direction based on both search and manual swaps
-            const isManuallySwapped = manuallySwappedPairIDs.has(p.tokenPairID);
-            const shouldBeSwapped = isManuallySwapped ? !isSearchSwapped : isSearchSwapped;
-
-            const fromChain = shouldBeSwapped ? p.toChain : p.fromChain;
-            const toChain = shouldBeSwapped ? p.fromChain : p.toChain;
-            const fromToken = shouldBeSwapped ? p.toToken : p.fromToken;
-            const toToken = shouldBeSwapped ? p.fromToken : p.toToken;
-
-            const directionalID = `${p.tokenPairID}_${fromChain.chainName}_${toChain.chainName}`;
-            const pairForOnClick = { ...p, fromChain, toChain, fromToken, toToken, directionalID };
-            currentRenderedPairs.set(directionalID, pairForOnClick); // Store data in the map
-            const isSelected = selectedPairsData.some(sp => sp.directionalID === directionalID);
-
-            return `
-            <div class="result-card overflow-hidden" id="card-${p.tokenPairID}">
-                <div class="p-8">
-                    <div class="flex flex-col md:flex-row justify-between items-start gap-6 mb-8">
-                        <div class="flex items-center gap-5">
-                            <div class="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white text-2xl font-black shadow-lg shadow-indigo-100">${name.substring(0,1)}</div>
-                            <div>
-                                <div class="flex items-center gap-2">
-                                    <h3 class="text-2xl font-black text-slate-900">${name}</h3>
-                                    <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-500 rounded-md mono font-bold">ID: ${p.tokenPairID}</span>
-                                </div>
-                                <div class="flex items-center gap-2 mt-1 text-slate-500 font-bold text-sm">
-                                    <span>${fromChain.chainName}</span>
-                                    <button onclick="event.stopPropagation(); swapPairDirection('${p.tokenPairID}')"
-                                            class="p-1 rounded-md hover:bg-slate-100 text-indigo-500 text-xs font-bold">
-                                        &#8646; Swap
-                                    </button>
-                                    <span>${toChain.chainName}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2">
-                             <button onclick="getQuotaAndFee('${fromChain.chainType}', '${toChain.chainType}', '${p.tokenPairID}', '${getDisplayName(p.symbol)}', 'fee-box-${p.tokenPairID}')"
-                                    class="px-6 py-3 font-bold rounded-xl transition bg-indigo-100 text-indigo-700 hover:bg-indigo-200 text-sm">
-                                View Fees
-                            </button>
-                            <button onclick="togglePairSelection('${directionalID}')"
-                                    class="w-full md:w-auto px-6 py-3 font-bold rounded-xl transition shadow-md ${isSelected ? 'bg-slate-200 text-slate-500 shadow-slate-100' : 'bg-green-500 text-white hover:bg-green-600 shadow-green-100'}">
-                                ${isSelected ? 'Added' : '+'}
-                            </button>
-                        </div>
-                    </div>
-
-                    <div id="fee-box-${p.tokenPairID}" class="hidden px-8 mb-8">
-                        <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-6 text-sm">
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                <div class="fee-item-container">
-                                    <span class="text-xs font-bold text-indigo-400 uppercase block mb-1">Min Quota</span>
-                                    <span id="min_${p.tokenPairID}" class="mono font-bold text-indigo-900 break-all">--</span>
-                                </div>
-                                <div class="fee-item-container">
-                                    <span class="text-xs font-bold text-indigo-400 uppercase block mb-1">Max Quota</span>
-                                    <span id="max_${p.tokenPairID}" class="mono font-bold text-indigo-900 break-all">--</span>
-                                </div>
-                                <div class="fee-item-container">
-                                    <span class="text-xs font-bold text-indigo-400 uppercase block mb-1">Network Fee</span>
-                                    <div>
-                                        <span id="net_${p.tokenPairID}" class="mono font-bold text-indigo-900 break-all">--</span>
-                                        <span id="netType_${p.tokenPairID}"></span>
-                                    </div>
-                                </div>
-                                 <div class="fee-item-container">
-                                    <span class="text-xs font-bold text-indigo-400 uppercase block mb-1">Operation Fee</span>
-                                    <div>
-                                        <span id="ops_${p.tokenPairID}" class="mono font-bold text-indigo-900 break-all">--</span>
-                                        <span id="opsType_${p.tokenPairID}"></span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="mt-4 pt-4 border-t border-indigo-200">
-                                <details class="group">
-                                    <summary class="text-xs font-bold text-indigo-400 cursor-pointer hover:text-indigo-600 transition">
-                                        View Raw Fee JSON
-                                    </summary>
-                                    <div class="mt-2 json-block bg-indigo-900/50 text-indigo-200"><pre id="fee-json-${p.tokenPairID}">{}</pre></div>
-                                </details>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 text-sm px-8">
-                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="text-[10px] font-black text-slate-400 uppercase">源链 Token 地址</span>
-                                <button id="btn-from-addr-${p.tokenPairID}" onclick="toggleAddressEncoding('from-addr-${p.tokenPairID}', this)" class="text-xs font-bold text-indigo-500 hover:text-indigo-700 p-1">解码</button>
-                            </div>
-                            <code id="from-addr-${p.tokenPairID}" data-original-address="${fromToken.address}" class="mono text-slate-700 break-all">${fromToken.address}</code>
-                        </div>
-                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="text-[10px] font-black text-slate-400 uppercase">目标链 Token 地址</span>
-                                <button id="btn-to-addr-${p.tokenPairID}" onclick="toggleAddressEncoding('to-addr-${p.tokenPairID}', this)" class="text-xs font-bold text-indigo-500 hover:text-indigo-700 p-1">解码</button>
-                            </div>
-                            <code id="to-addr-${p.tokenPairID}" data-original-address="${toToken.address}" class="mono text-slate-700 break-all">${toToken.address}</code>
-                        </div>
-                    </div>
-                    <div class="px-8 pb-8">
-                        <details class="group">
-                            <summary class="text-sm font-bold text-slate-400 cursor-pointer hover:text-slate-600 transition flex items-center gap-2">
-                                <svg class="w-4 h-4 group-open:rotate-90 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-                                查看完整 JSON 数据
-                            </summary>
-                            <div class="mt-4 json-block"><pre>${JSON.stringify(pairForOnClick, null, 2)}</pre></div>
-                        </details>
-                    </div>
-                </div>
-            </div>`;
         }
 
         function renderResults(list) {
             const container = document.getElementById('resultsList');
-            currentRenderedPairs.clear(); // Clear the map before rendering new results
+            currentRenderedPairs.clear();
             if (list.length === 0) {
                 container.innerHTML = `<div class='text-center py-20 text-slate-400 font-medium'>未找到匹配路径</div>`;
                 return;
             }
+            container.innerHTML = `<div class="mb-4 text-right"><button id="addAllBtn" class="px-6 py-3 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition">Add All Results to Selection</button></div>` + list.map(p => {
+                const name = getDisplayName(p.symbol);
+                const isManuallySwapped = manuallySwappedPairIDs.has(p.tokenPairID);
+                const shouldBeSwapped = isManuallySwapped ? !p._isSwapped : p._isSwapped;
+                const fromChain = shouldBeSwapped ? p.toChain : p.fromChain;
+                const toChain = shouldBeSwapped ? p.fromChain : p.toChain;
+                const fromToken = shouldBeSwapped ? p.toToken : p.fromToken;
+                const toToken = shouldBeSwapped ? p.fromToken : p.toToken;
+                const directionalID = `${p.tokenPairID}_${fromChain.chainName}_${toChain.chainName}`;
+                const pairForOnClick = { ...p, fromChain, toChain, fromToken, toToken, directionalID };
+                currentRenderedPairs.set(directionalID, pairForOnClick);
+                const isSelected = selectedPairsData.some(sp => sp.directionalID === directionalID);
+                return `
+                <div class="result-card overflow-hidden ${isSelected ? 'border-indigo-500 ring-2 ring-indigo-500/20' : ''}">
+                    <div class="p-8">
+                        <div class="flex flex-col md:flex-row justify-between items-start gap-6">
+                            <div class="flex items-center gap-5">
+                                <div class="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white text-2xl font-black">${name.substring(0,1)}</div>
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <h3 class="text-2xl font-black text-slate-900">${name}</h3>
+                                        <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-500 rounded-md mono font-bold">ID: ${p.tokenPairID}</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 mt-1 text-slate-500 font-bold text-sm">
+                                        <span>${fromChain.chainName}</span>
+                                        <button onclick="swapPairDirection('${p.tokenPairID}')" class="p-1 rounded-md hover:bg-slate-100 text-indigo-500 text-xs font-bold">&#8646; Swap</button>
+                                        <span>${toChain.chainName}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button onclick="getQuotaAndFee('${fromChain.chainType}', '${toChain.chainType}', '${p.tokenPairID}', '${name}', 'fee-box-${p.tokenPairID}')" class="px-6 py-3 font-bold rounded-xl bg-indigo-50 text-indigo-600 hover:bg-indigo-100 text-sm transition">Fees</button>
+                                <button onclick="togglePairSelection('${directionalID}')" class="px-6 py-3 font-bold rounded-xl transition ${isSelected ? 'bg-slate-200 text-slate-500' : 'bg-green-500 text-white hover:bg-green-600'}">${isSelected ? 'Added' : '+'}</button>
+                            </div>
+                        </div>
+                        <div id="fee-box-${p.tokenPairID}" class="hidden mt-6 bg-slate-50 rounded-2xl p-6 border border-slate-100">
+                             <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 text-sm mb-4">
+                                <div><span class="text-[10px] font-black text-slate-400 uppercase block">Min Quota</span><span id="min_${p.tokenPairID}" class="mono font-bold">--</span></div>
+                                <div><span class="text-[10px] font-black text-slate-400 uppercase block">Max Quota</span><span id="max_${p.tokenPairID}" class="mono font-bold">--</span></div>
+                                <div><span class="text-[10px] font-black text-slate-400 uppercase block">Net Fee</span><span id="net_${p.tokenPairID}" class="mono font-bold">--</span><span id="netType_${p.tokenPairID}"></span></div>
+                                <div><span class="text-[10px] font-black text-slate-400 uppercase block">Ops Fee</span><span id="ops_${p.tokenPairID}" class="mono font-bold">--</span><span id="opsType_${p.tokenPairID}"></span></div>
+                             </div>
+                             <details class="group"><summary class="text-xs font-bold text-slate-400 cursor-pointer">Raw JSON</summary><div class="mt-2 json-block bg-slate-900 text-slate-300"><pre id="fee-json-${p.tokenPairID}">{}</pre></div></details>
+                        </div>
 
-            const addAllButton = `<div class="mb-4 text-right">
-                <button id="addAllBtn" class="px-6 py-3 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600 transition">Add All Results to CSV</button>
-            </div>`;
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8 text-sm">
+                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="text-[10px] font-black text-slate-400 uppercase">源链 Token 地址</span>
+                                    <button onclick="toggleAddressEncoding('from-addr-${p.tokenPairID}', this)" class="text-xs font-bold text-indigo-500 hover:text-indigo-700 p-1">解码</button>
+                                </div>
+                                <code id="from-addr-${p.tokenPairID}" data-original-address="${fromToken.address}" class="mono text-slate-700 break-all">${fromToken.address}</code>
+                            </div>
+                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="text-[10px] font-black text-slate-400 uppercase">目标链 Token 地址</span>
+                                    <button onclick="toggleAddressEncoding('to-addr-${p.tokenPairID}', this)" class="text-xs font-bold text-indigo-500 hover:text-indigo-700 p-1">解码</button>
+                                </div>
+                                <code id="to-addr-${p.tokenPairID}" data-original-address="${toToken.address}" class="mono text-slate-700 break-all">${toToken.address}</code>
+                            </div>
+                        </div>
 
-            container.innerHTML = addAllButton + list.map(p => renderCard(p, p._isSwapped)).join('');
-
-            document.getElementById('addAllBtn').addEventListener('click', () => {
-                for (const [directionalID, pair] of currentRenderedPairs.entries()) {
-                    const isSelected = selectedPairsData.some(p => p.directionalID === directionalID);
-                    if (!isSelected) {
-                        togglePairSelection(directionalID);
-                    }
-                }
+                        <div class="mt-8">
+                            <details class="group">
+                                <summary class="text-sm font-bold text-slate-400 cursor-pointer hover:text-slate-600 transition flex items-center gap-2">
+                                    <svg class="w-4 h-4 group-open:rotate-90 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                                    查看完整 JSON 数据
+                                </summary>
+                                <div class="mt-4 json-block"><pre>${JSON.stringify(pairForOnClick, null, 2)}</pre></div>
+                            </details>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+            document.getElementById('addAllBtn')?.addEventListener('click', () => {
+                for (const [id, pair] of currentRenderedPairs) { if (!selectedPairsData.some(p => p.directionalID === id)) togglePairSelection(id); }
             });
         }
 
-        function changeEnv(val) {
-            isTestnet = val;
-            baseUrl = isTestnet ? "https://bridge-api.wanchain.org/api/testnet/" : "https://bridge-api.wanchain.org/api/";
-            document.getElementById('btnMain').className = !isTestnet ? "px-8 py-2.5 rounded-xl text-sm font-bold bg-indigo-600 text-white shadow-lg shadow-indigo-100 transition-all" : "px-8 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:text-indigo-600 transition-all";
-            document.getElementById('btnTest').className = isTestnet ? "px-8 py-2.5 rounded-xl text-sm font-bold bg-indigo-600 text-white shadow-lg shadow-indigo-100 transition-all" : "px-8 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:text-indigo-600 transition-all";
-            syncData();
-            fetchSmgID();
+        async function togglePairSelection(directionalID) {
+            const pair = currentRenderedPairs.get(directionalID);
+            if (!pair) return;
+            const idx = selectedPairsData.findIndex(p => p.directionalID === directionalID);
+            if (idx !== -1) {
+                selectedPairsData.splice(idx, 1);
+            } else {
+                const newPair = { ...pair, network_fee: 'Loading...', 'minServiceFee(wei)': 'Loading...', smg_raw: rawSmgID };
+                selectedPairsData.push(newPair);
+                renderSelectedPairs();
+                try {
+                    const cleanSymbol = getDisplayName(pair.symbol);
+                    const feeRes = await fetch(`${baseUrl}quotaAndFee?fromChainType=${pair.fromChain.chainType}&toChainType=${pair.toChain.chainType}&tokenPairID=${pair.tokenPairID}&symbol=${cleanSymbol}`).then(r => r.json());
+                    if (feeRes.success && feeRes.data) {
+                        const pIdx = selectedPairsData.findIndex(p => p.directionalID === directionalID);
+                        if (pIdx !== -1) {
+                            selectedPairsData[pIdx].network_fee = feeRes.data.networkFee?.value || '0';
+                            selectedPairsData[pIdx]['minServiceFee(wei)'] = feeRes.data.operationFee?.minFeeLimit || '0';
+                        }
+                    }
+                } catch (e) { console.error(e); }
+            }
+            renderSelectedPairs();
+            doFilter();
         }
 
-        function toggleAddressEncoding(elementId, buttonEl) {
-            const el = document.getElementById(elementId);
-            if (!el) return;
-
-            const originalAddress = el.dataset.originalAddress;
-            const currentText = el.innerText;
-
-            if (currentText === originalAddress) {
-                // It's encoded, so decode it
-                el.innerText = hexToUtf8(originalAddress);
-                buttonEl.innerText = '编码';
-            } else {
-                // It's decoded, so encode it
-                el.innerText = originalAddress;
-                buttonEl.innerText = '解码';
-            }
+        function swapPairDirection(tokenPairID) {
+            if (manuallySwappedPairIDs.has(tokenPairID)) manuallySwappedPairIDs.delete(tokenPairID);
+            else manuallySwappedPairIDs.add(tokenPairID);
+            doFilter();
         }
 
         async function fetchSmgID() {
@@ -507,260 +426,44 @@
                 const res = await fetch(`${baseUrl}smgID`).then(r => r.json());
                 if (res.success) {
                     rawSmgID = res.data;
-                    // 1. Remove 0x prefix
                     let cleanedHex = rawSmgID.startsWith('0x') ? rawSmgID.substring(2) : rawSmgID;
-                    // 2. Remove leading zeros
                     cleanedHex = cleanedHex.replace(/^0+/, '');
-                    // 3. Decode the cleaned hex to text
-                    let displaySmg = hexToUtf8(cleanedHex);
-
-                    // Sanitize by removing all null characters and control characters, then trimming whitespace
-                    displaySmg = displaySmg.replace(/[\u0000-\u001F\u007F-\u009F]/g, '').trim();
-
+                    let displaySmg = hexToUtf8(cleanedHex).replace(/[\u0000-\u001F\u007F-\u009F]/g, '').trim();
                     displayEl.innerText = displaySmg;
-                } else {
-                    rawSmgID = '';
-                    displayEl.innerText = 'Failed to load smgID.';
                 }
-            } catch (error) {
-                console.error('Error fetching smgID:', error);
-                rawSmgID = '';
-                displayEl.innerText = 'Error loading smgID.';
-            }
-        }
-
-        async function togglePairSelection(directionalID) {
-            const pair = currentRenderedPairs.get(directionalID);
-            if (!pair) {
-                console.error("Pair not found for ID:", directionalID);
-                return;
-            }
-
-            const isSelected = selectedPairsData.some(p => p.directionalID === directionalID);
-
-            if (isSelected) {
-                removePairFromSelection(directionalID);
-            } else {
-                // Add pair immediately for UI responsiveness
-                const newPair = { ...pair, network_fee: 'Loading...', 'minServiceFee(wei)': 'Loading...' };
-                selectedPairsData.push(newPair);
-                renderSelectedPairs(); // Update UI to show "Loading..."
-
-                try {
-                    const { fromChain, toChain, tokenPairID, symbol, fromToken } = pair;
-                    const cleanSymbol = getDisplayName(symbol);
-                    const feeUrl = `${baseUrl}quotaAndFee?fromChainType=${fromChain.chainType}&toChainType=${toChain.chainType}&tokenPairID=${tokenPairID}&symbol=${cleanSymbol}`;
-                    const feeRes = await fetch(feeUrl).then(r => r.json());
-
-                    let fee = 'Error';
-                    let minServiceFee = 'Error';
-
-                    if (feeRes.success && feeRes.data) {
-                        if (feeRes.data.networkFee && feeRes.data.networkFee.value) {
-                            fee = feeRes.data.networkFee.value;
-                        } else {
-                            console.error("Network fee data not found in API response:", feeRes);
-                        }
-                        if (feeRes.data.operationFee && feeRes.data.operationFee.minFeeLimit) {
-                            minServiceFee = feeRes.data.operationFee.minFeeLimit;
-                        } else {
-                            console.error("Operation fee minFeeLimit not found in API response:", feeRes);
-                            minServiceFee = 'N/A';
-                        }
-                    } else {
-                        console.error("Fee data not found in API response:", feeRes);
-                    }
-
-                    const pairIndex = selectedPairsData.findIndex(p => p.directionalID === directionalID);
-                    if (pairIndex !== -1) {
-                        selectedPairsData[pairIndex].network_fee = fee;
-                        selectedPairsData[pairIndex]['minServiceFee(wei)'] = minServiceFee;
-                    }
-                } catch (error) {
-                    console.error('Fee fetch error:', error);
-                    const pairIndex = selectedPairsData.findIndex(p => p.directionalID === directionalID);
-                    if (pairIndex !== -1) {
-                        selectedPairsData[pairIndex].network_fee = 'Error';
-                        selectedPairsData[pairIndex]['minServiceFee(wei)'] = 'Error';
-                    }
-                }
-            }
-
-            doFilter(); // Re-render the cards to update button states
-            renderSelectedPairs(); // Update the table with the final fee
-        }
-
-        function swapPairDirection(tokenPairID) {
-            if (manuallySwappedPairIDs.has(tokenPairID)) {
-                manuallySwappedPairIDs.delete(tokenPairID);
-            } else {
-                manuallySwappedPairIDs.add(tokenPairID);
-            }
-            doFilter(); // Re-render to apply the swap state
+            } catch (error) { displayEl.innerText = 'Error'; }
         }
 
         function updateSmgID() {
             const inputEl = document.getElementById('smgIdInput');
             const newSmgId = inputEl.value.trim();
             if (newSmgId) {
-                rawSmgID = newSmgId; // Store the raw input for CSV
-
-                // Update smg_raw for all selected pairs
-                selectedPairsData.forEach(p => {
-                    p.smg_raw = newSmgId;
-                });
-
-                // Decode for display
+                rawSmgID = newSmgId;
+                selectedPairsData.forEach(p => p.smg_raw = newSmgId);
                 let cleanedHex = newSmgId.startsWith('0x') ? newSmgId.substring(2) : newSmgId;
                 cleanedHex = cleanedHex.replace(/^0+/, '');
-                let displaySmg = hexToUtf8(cleanedHex);
-                displaySmg = displaySmg.replace(/[\u0000-\u001F\u007F-\u009F]/g, '').trim();
-
+                let displaySmg = hexToUtf8(cleanedHex).replace(/[\u0000-\u001F\u007F-\u009F]/g, '').trim();
                 document.getElementById('smgIDDisplay').innerText = displaySmg;
-                inputEl.value = ''; // Clear the input after update
-                renderSelectedPairs(); // Refresh the table
+                inputEl.value = '';
+                renderSelectedPairs();
             }
-        }
-
-        function removePairFromSelection(directionalID) {
-            selectedPairsData = selectedPairsData.filter(p => p.directionalID !== directionalID);
-            doFilter(); // Also re-render results to update button state
-            renderSelectedPairs();
         }
 
         function renderSelectedPairs() {
             const container = document.getElementById('selectedPairsTableContainer');
+            document.getElementById('selectedCount').innerText = `${selectedPairsData.length} PAIRS SELECTED`;
             if (selectedPairsData.length === 0) {
-                container.innerHTML = '<div class="text-center py-10"><p class="text-slate-400 font-medium">No token pairs selected.</p></div>';
+                container.innerHTML = '<div class="text-center py-20"><p class="text-slate-400 font-medium">No token pairs selected.</p></div>';
                 return;
             }
-
-            let tableHTML = `<div class="overflow-x-auto"><table class="w-full text-sm text-left text-slate-500">
-`;
-            tableHTML += '<thead class="text-xs text-slate-700 uppercase bg-slate-50">';
-            tableHTML += '<tr>';
-            csvHeaders.forEach(header => {
-                tableHTML += `<th scope="col" class="px-6 py-3">${header.replace(/_/g, ' ')}</th>`;
-            });
-            tableHTML += '<th scope="col" class="px-6 py-3">Action</th></tr></thead><tbody>';
-
-            let decodedSmgID = document.getElementById('smgIDDisplay').innerText;
-
-            selectedPairsData.forEach((p, index) => {
-                const name = getDisplayName(p.symbol);
-
-                let displaySmg = decodedSmgID;
-                if (p.smg_raw) {
-                    let cleanedHex = p.smg_raw.startsWith('0x') ? p.smg_raw.substring(2) : p.smg_raw;
-                    cleanedHex = cleanedHex.replace(/^0+/, '');
-                    displaySmg = hexToUtf8(cleanedHex);
-                    displaySmg = displaySmg.replace(/[\u0000-\u001F\u007F-\u009F]/g, '').trim();
-                }
-
-                const row = {
-                    ...p,
-                    id: index + 1,
-                    smg: displaySmg,
-                    token_name: name,
-                    token_pair_id: p.tokenPairID,
-                    from_chain: p.fromChain.chainName,
-                    to_chain: p.toChain.chainName,
-                    from_chain_slip44_id: p.fromChain.slip44ChainID,
-                    to_chain_slip44_id: p.toChain.slip44ChainID,
-                    from_token_address: p.fromToken.address,
-                    to_token_address: p.toToken.address,
-                    from_token_decimals: p.fromToken.decimals,
-                    to_token_decimals: p.toToken.decimals,
-                    network_fee: p.network_fee,
-                    network_fee_asset: p.fromChain.chainType,
-                    'minServiceFee(wei)': p['minServiceFee(wei)'],
-                    'cross_amount(eth)': toEth(p['minServiceFee(wei)'], p.fromToken.decimals)
-                };
-
-                tableHTML += '<tr class="bg-white border-b hover:bg-slate-50">';
-                csvHeaders.forEach(header => {
-                    let displayValue = row[header] === undefined || row[header] === null ? '' : row[header];
-                    if (header === 'from_token_address') {
-                        displayValue = hexToUtf8(String(displayValue));
-                    } else if (header === 'to_token_address') {
-                        displayValue = shortenAddress(String(displayValue));
-                    }
-                     tableHTML += `<td class="px-6 py-4 mono font-medium text-slate-800 break-all">${displayValue}</td>`;
-                });
-                tableHTML += `<td class="px-6 py-4"><button onclick="removePairFromSelection('${p.directionalID}')" class="px-3 py-1 bg-red-500 text-white font-bold rounded-lg hover:bg-red-600 transition text-xs">Remove</button></td></tr>`;
-            });
-
-            tableHTML += '</tbody></table></div>';
-            container.innerHTML = tableHTML;
-        }
-
-        function addCsvHeader() {
-            const newHeaderInput = document.getElementById('newHeaderInput');
-            const newHeaders = newHeaderInput.value.trim().split(',').map(h => h.trim()).filter(Boolean);
-            if (newHeaders.length > 0) {
-                newHeaders.forEach(newHeader => {
-                    if (!csvHeaders.includes(newHeader)) {
-                        csvHeaders.push(newHeader);
-                    }
-                });
-                newHeaderInput.value = '';
-                renderCsvHeaders();
-                renderSelectedPairs();
-            }
-        }
-
-        function addEvmHeaders() {
-            evmHeadersSet.forEach(header => {
-                if (!csvHeaders.includes(header)) {
-                    csvHeaders.push(header);
-                }
-            });
-            renderCsvHeaders();
-            renderSelectedPairs();
-        }
-
-        function addCardanoHeaders() {
-            cardanoHeadersSet.forEach(header => {
-                if (!csvHeaders.includes(header)) {
-                    csvHeaders.push(header);
-                }
-            });
-            renderCsvHeaders();
-            renderSelectedPairs();
-        }
-
-        function removeCsvHeader(header) {
-            csvHeaders = csvHeaders.filter(h => h !== header);
-            renderCsvHeaders();
-            renderSelectedPairs();
-        }
-
-        function resetCsvHeaders() {
-            csvHeaders = [...defaultCsvHeaders];
-            renderCsvHeaders();
-            renderSelectedPairs();
-        }
-
-        function renderCsvHeaders() {
-            const container = document.getElementById('csvHeadersContainer');
-            container.innerHTML = csvHeaders.map(header => `
-                <div class="header-pill">
-                    ${header}
-                    <button onclick="removeCsvHeader('${header}')">❌</button>
-                </div>
-            `).join('');
-        }
-
-        function generateCSV() {
-            let csvContent = "data:text/csv;charset=utf-8," + csvHeaders.join(",") + "\n";
-
-            selectedPairsData.forEach((p, index) => {
-                const name = getDisplayName(p.symbol);
-                const row = {
-                    ...p,
-                    id: index + 1,
+            let html = `<div class="overflow-x-auto"><table><thead><tr>`;
+            csvHeaders.forEach(h => html += `<th>${h.replace(/_/g, ' ')}</th>`);
+            html += `<th>Action</th></tr></thead><tbody>`;
+            selectedPairsData.forEach((p, idx) => {
+                const rowData = {
+                    id: idx + 1,
                     smg: p.smg_raw || rawSmgID,
-                    token_name: name,
+                    token_name: getDisplayName(p.symbol),
                     token_pair_id: p.tokenPairID,
                     from_chain: p.fromChain.chainName,
                     to_chain: p.toChain.chainName,
@@ -775,195 +478,114 @@
                     'minServiceFee(wei)': p['minServiceFee(wei)'],
                     'cross_amount(eth)': toEth(p['minServiceFee(wei)'], p.fromToken.decimals)
                 };
-
-                let rowData = csvHeaders.map(header => {
-                    const value = row[header] || '';
-                    // Escape commas and quotes for CSV
-                    const escapedValue = ('' + value).replace(/"/g, '""');
-                    return `"${escapedValue}"`;
+                Object.assign(rowData, p); // Incorporate custom fields from CSV import
+                html += `<tr class="hover:bg-slate-50 transition">`;
+                csvHeaders.forEach(h => {
+                    let val = rowData[h] ?? '';
+                    if (h === 'from_token_address' || h === 'to_token_address') val = `<span title="${val}">${shortenAddress(String(val))}</span>`;
+                    html += `<td class="mono break-all">${val}</td>`;
                 });
-                csvContent += rowData.join(",") + "\n";
+                html += `<td><button onclick="togglePairSelection('${p.directionalID}')" class="text-rose-500 font-bold hover:text-rose-700">Remove</button></td></tr>`;
             });
-
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "token_pairs.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        function parseCSV(text) {
-            const rows = [];
-            let currentRow = [];
-            let currentField = '';
-            let inQuotes = false;
-
-            for (let i = 0; i < text.length; i++) {
-                const char = text[i];
-                const nextChar = text[i + 1];
-
-                if (inQuotes) {
-                    if (char === '"' && nextChar === '"') {
-                        currentField += '"';
-                        i++;
-                    } else if (char === '"') {
-                        inQuotes = false;
-                    } else {
-                        currentField += char;
-                    }
-                } else {
-                    if (char === '"') {
-                        inQuotes = true;
-                    } else if (char === ',') {
-                        currentRow.push(currentField);
-                        currentField = '';
-                    } else if (char === '\n' || char === '\r') {
-                        currentRow.push(currentField);
-                        rows.push(currentRow);
-                        currentRow = [];
-                        currentField = '';
-                        if (char === '\r' && nextChar === '\n') i++;
-                    } else {
-                        currentField += char;
-                    }
-                }
-            }
-            if (currentField || currentRow.length > 0) {
-                currentRow.push(currentField);
-                rows.push(currentRow);
-            }
-            return rows.filter(r => r.length > 1 || (r.length === 1 && r[0] !== ''));
+            container.innerHTML = html + `</tbody></table></div>`;
         }
 
         async function handleCaseUpdate() {
             const fileInput = document.getElementById('caseUpdateInput');
-            const file = fileInput.files[0];
-            if (!file) {
-                alert('Please select a CSV file first.');
-                return;
-            }
+            if (!fileInput.files[0]) return;
+            const text = await fileInput.files[0].text();
+            const lines = text.split('\n').filter(l => l.trim());
+            if (lines.length < 2) return;
+            const csvHeadersIn = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
+            const dataRows = lines.slice(1);
 
-            const text = await file.text();
-            const rows = parseCSV(text);
-            if (rows.length < 2) {
-                alert('Invalid CSV file.');
-                return;
-            }
-
-            const headers = rows[0].map(h => h.trim().toLowerCase().replace(/ /g, '_'));
-            const dataRows = rows.slice(1);
-
-            // Add recognized headers to active csvHeaders
+            // Map incoming lowercase headers to our standard headers case-insensitively
+            const headerMap = {};
             let headersAdded = false;
-            headers.forEach(h => {
-                if (allRecognizedHeaders.includes(h) && !csvHeaders.includes(h)) {
-                    csvHeaders.push(h);
-                    headersAdded = true;
+            csvHeadersIn.forEach(h => {
+                const match = allRecognizedHeaders.find(rh => rh.toLowerCase() === h);
+                if (match) {
+                    headerMap[h] = match;
+                    if (!csvHeaders.includes(match)) {
+                        csvHeaders.push(match);
+                        headersAdded = true;
+                    }
                 }
             });
             if (headersAdded) renderCsvHeaders();
 
-            // Fetch current SMG ID globally
-            await fetchSmgID();
+            for (const rowStr of dataRows) {
+                const vals = rowStr.split(',').map(v => v.trim().replace(/"/g, ''));
+                const rowObj = {};
+                csvHeadersIn.forEach((h, i) => rowObj[headerMap[h] || h] = vals[i]);
 
-            let updatedCount = 0;
-            for (const row of dataRows) {
-                const rowData = {};
-                headers.forEach((h, i) => {
-                    rowData[h] = row[i];
-                });
+                const pID = rowObj.token_pair_id;
+                const fC = rowObj.from_chain?.toLowerCase();
+                const tC = rowObj.to_chain?.toLowerCase();
+                if (!pID || !fC || !tC) continue;
 
-                const tokenPairID = rowData.token_pair_id;
-                const fromChainName = (rowData.from_chain || '').trim().toLowerCase();
-                const toChainName = (rowData.to_chain || '').trim().toLowerCase();
+                const basePair = allPairs.find(p => String(p.tokenPairID) === String(pID));
+                if (!basePair) continue;
 
-                if (!tokenPairID || !fromChainName || !toChainName) continue;
+                let dirPair;
+                if (basePair.fromChain.chainName.toLowerCase() === fC && basePair.toChain.chainName.toLowerCase() === tC) dirPair = basePair;
+                else if (basePair.fromChain.chainName.toLowerCase() === tC && basePair.toChain.chainName.toLowerCase() === fC) dirPair = { ...basePair, fromChain: basePair.toChain, toChain: basePair.fromChain, fromToken: basePair.toToken, toToken: basePair.fromToken };
 
-                // 1. Find matching pair in allPairs pool
-                const pairFromPool = allPairs.find(p => String(p.tokenPairID) === String(tokenPairID));
-                if (!pairFromPool) continue;
-
-                // 2. Determine direction
-                let finalFromChain, finalToChain, finalFromToken, finalToToken;
-                const isStraight = pairFromPool.fromChain.chainName.toLowerCase() === fromChainName &&
-                                 pairFromPool.toChain.chainName.toLowerCase() === toChainName;
-                const isReverse = pairFromPool.fromChain.chainName.toLowerCase() === toChainName &&
-                                pairFromPool.toChain.chainName.toLowerCase() === fromChainName;
-
-                if (isStraight) {
-                    finalFromChain = pairFromPool.fromChain;
-                    finalToChain = pairFromPool.toChain;
-                    finalFromToken = pairFromPool.fromToken;
-                    finalToToken = pairFromPool.toToken;
-                } else if (isReverse) {
-                    finalFromChain = pairFromPool.toChain;
-                    finalToChain = pairFromPool.fromChain;
-                    finalFromToken = pairFromPool.toToken;
-                    finalToToken = pairFromPool.fromToken;
-                } else {
-                    continue; // No matching direction
-                }
-
-                const directionalID = `${tokenPairID}_${finalFromChain.chainName}_${finalToChain.chainName}`;
-
-                // 3. Find if already selected, if not add it
-                let targetPair = selectedPairsData.find(p => p.directionalID === directionalID);
-                if (!targetPair) {
-                    targetPair = {
-                        ...pairFromPool,
-                        fromChain: finalFromChain,
-                        toChain: finalToChain,
-                        fromToken: finalFromToken,
-                        toToken: finalToToken,
-                        directionalID,
-                        network_fee: 'Loading...',
-                        'minServiceFee(wei)': 'Loading...'
-                    };
-                    selectedPairsData.push(targetPair);
-                }
-
-                // 4. Update data
-                // Store all CSV row data in the pair object to preserve recognized columns
-                Object.assign(targetPair, rowData);
-                if (rowData.smg) targetPair.smg_raw = rowData.smg;
-
-                // Fetch current network fee and service fee from API
-                try {
-                    const cleanSymbol = getDisplayName(targetPair.symbol);
-                    const feeUrl = `${baseUrl}quotaAndFee?fromChainType=${targetPair.fromChain.chainType}&toChainType=${targetPair.toChain.chainType}&tokenPairID=${targetPair.tokenPairID}&symbol=${cleanSymbol}`;
-                    const feeRes = await fetch(feeUrl).then(r => r.json());
-
-                    if (feeRes.success && feeRes.data) {
-                        if (feeRes.data.networkFee && feeRes.data.networkFee.value) {
-                            targetPair.network_fee = feeRes.data.networkFee.value;
-                        }
-                        if (feeRes.data.operationFee && feeRes.data.operationFee.minFeeLimit) {
-                            targetPair['minServiceFee(wei)'] = feeRes.data.operationFee.minFeeLimit;
-                        }
+                if (dirPair) {
+                    const directionalID = `${dirPair.tokenPairID}_${dirPair.fromChain.chainName}_${dirPair.toChain.chainName}`;
+                    let existing = selectedPairsData.find(p => p.directionalID === directionalID);
+                    if (!existing) {
+                        existing = { ...dirPair, directionalID, network_fee: 'Loading...', 'minServiceFee(wei)': 'Loading...' };
+                        selectedPairsData.push(existing);
                     }
-                } catch (e) {
-                    console.error('Error fetching fee during bulk update:', e);
+                    Object.assign(existing, rowObj);
+                    if (rowObj.smg) existing.smg_raw = rowObj.smg;
                 }
-
-                updatedCount++;
             }
-
-            if (updatedCount > 0) {
-                renderSelectedPairs();
-                doFilter(); // Update card buttons
-                alert(`Processed ${updatedCount} cases from CSV.`);
-            } else {
-                alert('No matching cases found in the data pool.');
-            }
+            renderSelectedPairs();
             fileInput.value = '';
         }
 
+        function addCsvHeader() {
+            const val = document.getElementById('newHeaderInput').value.trim();
+            if (val) { val.split(',').forEach(h => { if(!csvHeaders.includes(h.trim())) csvHeaders.push(h.trim()); }); renderCsvHeaders(); renderSelectedPairs(); }
+            document.getElementById('newHeaderInput').value = '';
+        }
+        function addEvmHeaders() { evmHeadersSet.forEach(h => { if(!csvHeaders.includes(h)) csvHeaders.push(h); }); renderCsvHeaders(); renderSelectedPairs(); }
+        function addCardanoHeaders() { cardanoHeadersSet.forEach(h => { if(!csvHeaders.includes(h)) csvHeaders.push(h); }); renderCsvHeaders(); renderSelectedPairs(); }
+        function resetCsvHeaders() { csvHeaders = [...defaultCsvHeaders]; renderCsvHeaders(); renderSelectedPairs(); }
+        function renderCsvHeaders() { document.getElementById('csvHeadersContainer').innerHTML = csvHeaders.map(h => `<div class="header-pill">${h}<button onclick="csvHeaders=csvHeaders.filter(x=>x!=='${h}');renderCsvHeaders();renderSelectedPairs();">✕</button></div>`).join(''); }
+        function generateCSV() {
+            let csv = csvHeaders.join(',') + '\n';
+            selectedPairsData.forEach((p, idx) => {
+                const row = {
+                    id: idx + 1, smg: p.smg_raw || rawSmgID, token_name: getDisplayName(p.symbol), token_pair_id: p.tokenPairID,
+                    from_chain: p.fromChain.chainName, to_chain: p.toChain.chainName, from_chain_slip44_id: p.fromChain.slip44ChainID, to_chain_slip44_id: p.toChain.slip44ChainID,
+                    from_token_address: p.fromToken.address, to_token_address: p.toToken.address, from_token_decimals: p.fromToken.decimals, to_token_decimals: p.toToken.decimals,
+                    network_fee: p.network_fee, network_fee_asset: p.fromChain.chainType, 'minServiceFee(wei)': p['minServiceFee(wei)'],
+                    'cross_amount(eth)': toEth(p['minServiceFee(wei)'], p.fromToken.decimals)
+                };
+                Object.assign(row, p);
+                csv += csvHeaders.map(h => `"${String(row[h] ?? '').replace(/"/g, '""')}"`).join(',') + '\n';
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.setAttribute("download", "bridge_pairs.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        function changeEnv(isTest) {
+            isTestnet = isTest; baseUrl = isTestnet ? "https://bridge-api.wanchain.org/api/testnet/" : "https://bridge-api.wanchain.org/api/";
+            document.getElementById('btnMain').className = !isTestnet ? "px-8 py-2.5 rounded-xl text-sm font-bold bg-indigo-600 text-white shadow-lg shadow-indigo-100" : "px-8 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:text-indigo-600";
+            document.getElementById('btnTest').className = isTestnet ? "px-8 py-2.5 rounded-xl text-sm font-bold bg-indigo-600 text-white shadow-lg shadow-indigo-100" : "px-8 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:text-indigo-600";
+            syncData(); fetchSmgID();
+        }
         function toggleTool() { document.getElementById('hexTool').classList.toggle('hidden'); }
-
-        document.getElementById('hexInput').addEventListener('input', e => {
-            const raw = e.target.value.replace(/^0x/, '').replace(/\./g, '').replace(/\s/g, '');
+        document.getElementById('hexInput')?.addEventListener('input', e => {
+            const raw = e.target.value.replace(/^0x/, '').replace(/\s/g, '');
             let bin = ""; let text = "";
             for (let i = 0; i < raw.length; i++) {
                 bin += parseInt(raw[i], 16).toString(2).padStart(4, '0') + " ";
@@ -972,12 +594,9 @@
             document.getElementById('binOutput').innerText = bin.trim();
             document.getElementById('textOutput').innerText = text;
         });
-
         document.addEventListener('click', e => { if (!e.target.closest('.suggest-container')) document.querySelectorAll('.suggest-list').forEach(el => el.style.display = 'none'); });
-
         changeEnv(false);
         renderCsvHeaders();
     </script>
 </body>
-
 </html>
