@@ -154,7 +154,7 @@
         let selectedPairsData = [];
         let manuallySwappedPairIDs = new Set();
         const defaultCsvHeaders = ['id', 'smg', 'token_name', 'token_pair_id', 'from_chain', 'to_chain', 'from_chain_slip44_id', 'to_chain_slip44_id', 'from_token_address', 'to_token_address', 'from_token_decimals', 'to_token_decimals', 'network_fee', 'network_fee_asset', 'minServiceFee(wei)', 'cross_amount(eth)'];
-        const evmHeadersSet = ['from_coin_decimals', 'cross_amount(eth)', 'required_native_coin(wei)', 'to_address', 'bridge_type'];
+        const evmHeadersSet = ['from_coin_decimals', 'cross_amount(eth)', 'to_address', 'bridge_type'];
         const cardanoHeadersSet = ['bridge_type', 'cross_type', 'cross_amount(eth)', 'to_address', 'required_token(wei)', 'required_ada'];
         const allRecognizedHeaders = [...new Set([...defaultCsvHeaders, ...evmHeadersSet, ...cardanoHeadersSet])];
         let csvHeaders = [...defaultCsvHeaders];
