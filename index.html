@@ -35,82 +35,84 @@
             </div>
         </header>
 
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
-            <div class="md:col-span-7">
-                <section class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 mb-10">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="suggest-container">
-                            <label class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1">Asset 资产</label>
-                            <input type="text" id="assetIn" autocomplete="off" placeholder="例如: BTC" class="input-pill w-full" oninput="showSuggestions('assetIn', 'assetSuggest', 'asset')">
-                            <div id="assetSuggest" class="suggest-list"></div>
-                        </div>
-                        <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
-                            <div class="suggest-container">
-                                <label class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1">Network A 链</label>
-                                <input type="text" id="chainA" autocomplete="off" placeholder="例如: BSC" class="input-pill w-full" oninput="showSuggestions('chainA', 'chainASuggest', 'chain')">
-                                <div id="chainASuggest" class="suggest-list"></div>
-                            </div>
-                            <div class="suggest-container">
-                                <label class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1">Network B 链</label>
-                                <input type="text" id="chainB" autocomplete="off" placeholder="例如: Cardano" class="input-pill w-full" oninput="showSuggestions('chainB', 'chainBSuggest', 'chain')">
-                                <div id="chainBSuggest" class="suggest-list"></div>
-                            </div>
-                        </div>
+        <section class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 mb-10">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <div class="suggest-container lg:col-span-1">
+                    <label class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1">Asset 资产</label>
+                    <input type="text" id="assetIn" autocomplete="off" placeholder="例如: BTC" class="input-pill w-full" oninput="showSuggestions('assetIn', 'assetSuggest', 'asset')">
+                    <div id="assetSuggest" class="suggest-list"></div>
+                </div>
+                <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="suggest-container">
+                        <label class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1">Network A 链</label>
+                        <input type="text" id="chainA" autocomplete="off" placeholder="例如: BSC" class="input-pill w-full" oninput="showSuggestions('chainA', 'chainASuggest', 'chain')">
+                        <div id="chainASuggest" class="suggest-list"></div>
                     </div>
-                    <div class="mt-6 flex justify-between items-center">
-                        <div id="dataStatus" class="text-sm font-medium text-slate-400 flex items-center gap-2">
-                            <span id="statusDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                            <span id="statusText">正在同步数据...</span>
-                        </div>
-                        <button onclick="doFilter()" class="px-6 py-3 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition">Search</button>
+                    <div class="suggest-container">
+                        <label class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1">Network B 链</label>
+                        <input type="text" id="chainB" autocomplete="off" placeholder="例如: Cardano" class="input-pill w-full" oninput="showSuggestions('chainB', 'chainBSuggest', 'chain')">
+                        <div id="chainBSuggest" class="suggest-list"></div>
                     </div>
-                </section>
-                <div id="resultsList" class="space-y-8"></div>
+                </div>
+                <div class="lg:col-span-1 flex flex-col justify-end">
+                    <button onclick="doFilter()" class="w-full py-4 bg-indigo-600 text-white font-black rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-100">SEARCH PATHS</button>
+                </div>
+            </div>
+            <div class="mt-4 flex items-center gap-3">
+                <div id="dataStatus" class="text-[11px] font-bold text-slate-400 flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">
+                    <span id="statusDot" class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    <span id="statusText">正在同步数据...</span>
+                </div>
+            </div>
+        </section>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+            <div class="lg:col-span-7">
+                <div id="resultsList" class="space-y-6"></div>
             </div>
 
-            <div class="md:col-span-5 space-y-8">
-                <section class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 sticky top-8">
-                    <label class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1">当前 SMG ID</label>
-                    <div id="smgIDDisplay" class="text-xl font-black text-indigo-600 mono break-all">
-                        --
-                    </div>
-                    <div class="flex mt-4">
-                        <input type="text" id="smgIdInput" class="input-pill w-full mr-2" placeholder="Enter new SMG ID">
-                        <button onclick="updateSmgID()" class="px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition">Update</button>
+            <div class="lg:col-span-5 space-y-8 sticky top-8">
+                <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
+                    <div class="mb-10">
+                        <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-6">Master Configuration</h3>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase mb-2 block">Current SMG ID</label>
+                        <div id="smgIDDisplay" class="text-lg font-black text-indigo-600 mono break-all bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100/50 mb-4">
+                            --
+                        </div>
+                        <div class="flex gap-2">
+                            <input type="text" id="smgIdInput" class="input-pill w-full text-sm" placeholder="Update SMG ID...">
+                            <button onclick="updateSmgID()" class="px-6 bg-slate-900 text-white font-bold rounded-xl hover:bg-black transition">Update</button>
+                        </div>
                     </div>
 
-                    <div class="mt-10">
-                        <h2 class="text-xl font-bold mb-4">CSV Generation</h2>
+                    <div class="mb-10">
+                        <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-6">CSV / JSON Headers</h3>
+                        <div id="csvHeadersContainer" class="flex flex-wrap gap-2 mb-6 min-h-[40px]"></div>
+                        <div class="flex gap-2 mb-4">
+                            <input type="text" id="newHeaderInput" class="input-pill w-full text-sm" placeholder="Add custom header...">
+                            <button onclick="addCsvHeader()" class="px-6 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition">Add</button>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="addEvmHeaders()" class="px-3 py-2 bg-slate-100 text-slate-600 font-bold rounded-lg hover:bg-slate-200 transition text-[10px] uppercase">EVM Defaults</button>
+                            <button onclick="addCardanoHeaders()" class="px-3 py-2 bg-slate-100 text-slate-600 font-bold rounded-lg hover:bg-slate-200 transition text-[10px] uppercase">Cardano Defaults</button>
+                            <button onclick="resetCsvHeaders()" class="px-3 py-2 bg-rose-50 text-rose-600 font-bold rounded-lg hover:bg-rose-100 transition text-[10px] uppercase">Reset All</button>
+                        </div>
+                    </div>
+
+                    <div class="pt-8 border-t border-slate-100">
+                        <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-6">Data Operations</h3>
                         <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-2">CSV Headers</label>
-                                <div id="csvHeadersContainer" class="flex flex-wrap gap-2 mb-4"></div>
+                            <div class="p-5 bg-slate-50 rounded-2xl border border-slate-100">
+                                <label class="text-[10px] font-bold text-slate-400 uppercase mb-3 block">Bulk Case Update</label>
                                 <div class="flex gap-2">
-                                    <input type="text" id="newHeaderInput" class="input-pill w-full" placeholder="Add new header">
-                                    <button onclick="addCsvHeader()" class="px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition">Add</button>
-                                </div>
-                                <div class="mt-4 flex flex-wrap gap-2">
-                                    <button onclick="addEvmHeaders()" class="px-3 py-1.5 bg-slate-100 text-slate-600 font-bold rounded-lg hover:bg-slate-200 transition text-xs">Add EVM Headers</button>
-                                    <button onclick="addCardanoHeaders()" class="px-3 py-1.5 bg-slate-100 text-slate-600 font-bold rounded-lg hover:bg-slate-200 transition text-xs">Add Cardano Headers</button>
-                                    <button onclick="resetCsvHeaders()" class="px-3 py-1.5 bg-rose-50 text-rose-600 font-bold rounded-lg hover:bg-rose-100 transition text-xs">Reset Headers</button>
+                                    <input type="file" id="caseUpdateInput" accept=".csv" class="text-xs file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                                    <button onclick="handleCaseUpdate()" class="px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-lg hover:bg-indigo-700 transition">Import</button>
                                 </div>
                             </div>
-                            <button onclick="generateCSV()" class="w-full py-4 bg-indigo-600 text-white font-black rounded-2xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-100">GENERATE CSV / JSON</button>
+                            <button onclick="generateCSV()" class="w-full py-5 bg-slate-900 text-white font-black rounded-2xl hover:bg-black transition shadow-xl shadow-slate-200 uppercase tracking-widest text-sm">Download Export Package</button>
                         </div>
                     </div>
-
-                    <div class="mt-10 pt-10 border-t border-slate-100">
-                        <h2 class="text-xl font-bold mb-4">Case Update</h2>
-                        <div class="space-y-4">
-                            <label class="block text-sm font-medium text-slate-700">Import CSV to Update Cases</label>
-                            <div class="flex gap-2">
-                                <input type="file" id="caseUpdateInput" accept=".csv" class="input-pill w-full text-sm">
-                                <button onclick="handleCaseUpdate()" class="px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition">Import</button>
-                            </div>
-                            <p class="text-xs text-slate-400 italic">Matches by token_pair_id, from_chain, and to_chain. Updates smg, network_fee, minServiceFee(wei), and cross_amount(eth).</p>
-                        </div>
-                    </div>
-                </section>
+                </div>
             </div>
         </div>
 
@@ -154,8 +156,9 @@
         let manuallySwappedPairIDs = new Set();
 
         const LOCK_TOKEN_CONFIG = [{"chainType":"CELO","tokenScAddr":"0xceba9300f2b948710d2653dd7b07f33a8b32118c","tokenType":"Erc20","symbol":"USDC"},{"chainType":"ZKETH","tokenScAddr":"0x0000000000000000000000000000000000000000","tokenType":"Erc20","symbol":"ETH"},{"chainType":"SOL","tokenScAddr":"0x4845435a677337756e4a744a323632366131465634426e6d567235427068755a576f62566176646d70596e59","tokenType":"Erc20","symbol":"VINU"},{"chainType":"OETH","tokenScAddr":"0x7f5c764cbc14f9669b88837ca1490cca17c31607","tokenType":"Erc20","symbol":"USDC"},{"chainType":"UNIETH","tokenScAddr":"0x078d782b760474a361dda0af3839290b0ef57ad6","tokenType":"Erc20","symbol":"USDC"},{"chainType":"SOL","tokenScAddr":"0x45506a465764643541756671535371654d32714e31787a7962617043384734774547476b5a77795444743176","tokenType":"Erc20","symbol":"USDC"},{"chainType":"ETH","tokenScAddr":"0xf197ffc28c23e0309b5559e7a166f2c6164c80aa","tokenType":"Erc20","symbol":"MXNB"},{"chainType":"OPBNB","tokenScAddr":"0x9e5aac1ba1a2e6aed6b32689dfcf62a509ca96f3","tokenType":"Erc20","symbol":"USDT"},{"chainType":"SOL","tokenScAddr":"0x3262316b5636446b50416e7864356978666e7843706a786d4b77716a6a61596d435a6648734675323447586f","tokenType":"Erc20","symbol":"PYUSD"},{"chainType":"VET","tokenScAddr":"0x0000000000000000000000000000456e65726779","tokenType":"Erc20","symbol":"VTHO"},{"chainType":"KAVA","tokenScAddr":"0x65726332302f7465746865722f75736474","tokenType":"Erc20","symbol":"USDT"},{"chainType":"MATIC","tokenScAddr":"0xafcdd4f666c84fed1d8bd825aa762e3714f652c9","tokenType":"Erc20","symbol":"VINU"},{"chainType":"MATIC","tokenScAddr":"0x2791bca1f2de4661ed88a30c99a7a9449aa84174","tokenType":"Erc20","symbol":"USDC"},{"chainType":"ETH","tokenScAddr":"0xf3096b5cb3770d9e13979729e66227a34463df20","tokenType":"Erc20","symbol":"4341524453"},{"chainType":"ARETH","tokenScAddr":"0xaf88d065e77c8cc2239327c5edb3a432268e5831","tokenType":"Erc20","symbol":"USDC"},{"chainType":"ETH","tokenScAddr":"0x7cfea0dd176651e7b5a1ced9c4faf8ee295315fd","tokenType":"Erc20","symbol":"PRNT"},{"chainType":"ETH","tokenScAddr":"0x6b175474e89094c44da98b954eedeac495271d0f","tokenType":"Erc20","symbol":"DAI"},{"chainType":"METIS","tokenScAddr":"0x433e43047b95cb83517abd7c9978bdf7005e9938","tokenType":"Erc20","symbol":"BTC"},{"chainType":"ADA","tokenScAddr":"0x0000000000000000000000000000000000000000","tokenType":"Erc20","symbol":"ADA"},{"chainType":"VET","tokenScAddr":"0x5ef79995fe8a89e0812330e4378eb2660cede699","tokenType":"Erc20","symbol":"B3TR"},{"chainType":"MATICETH","tokenScAddr":"0x0000000000000000000000000000000000000000","tokenType":"Erc20","symbol":"ETH"},{"chainType":"ETH","tokenScAddr":"0x0000000000000000000000000000000000000000","tokenType":"Erc20","symbol":"ETH"},{"chainType":"SUI","tokenScAddr":"0x3078646261333436373265333063623036356231663933653361623535333138373638666436666566363663313539343263396637636238343665326639303065373a3a757364633a3a55534443","tokenType":"Erc20","symbol":"USDC"},{"chainType":"OPBNB","tokenScAddr":"0x0000000000000000000000000000000000000000","tokenType":"Erc20","symbol":"BNB"},{"chainType":"BNB","tokenScAddr":"0x0d095f49d1145ad5f8fe73c91548f0433f7713ad","tokenType":"Erc20","symbol":"54414441"},{"chainType":"ADA","tokenScAddr":"0x30363931623266656363613161633466353363623664666230306237303133653536316431663334343033623935376362623561663166612e34653439343734383534","tokenType":"Erc20","symbol":"4e49474854"},{"chainType":"ETH","tokenScAddr":"0xeb986da994e4a118d5956b02d8b7c3c7ce373674","tokenType":"Erc20","symbol":"GTH"},{"chainType":"MATIC","tokenScAddr":"0x7ceb23fd6bc0add59e62ac25578270cff1b9f619","tokenType":"Erc20","symbol":"ETH"},{"chainType":"MATIC","tokenScAddr":"0x8f3cf7ad23cd3cadbd9735aff958023239c6a063","tokenType":"Erc20","symbol":"DAI"},{"chainType":"LINEAETH","tokenScAddr":"0x0000000000000000000000000000000000000000","tokenType":"Erc20","symbol":"ETH"},{"chainType":"NOBLE","tokenScAddr":"0x7575736463","tokenType":"Erc20","symbol":"USDC"},{"chainType":"TRX","tokenScAddr":"0xa614f803b6fd780986a42c78ec9c7f77e6ded13c","tokenType":"Erc20","symbol":"USDT"},{"chainType":"BNB","tokenScAddr":"0x2bf83d080d8bc4715984e75e5b3d149805d11751","tokenType":"Erc20","symbol":"VC"},{"chainType":"ETH","tokenScAddr":"0x9200dac087af02cea91ed0685a2f89610aacf02f","tokenType":"Erc20","symbol":"776f726c646d6f62696c65746f6b656e"},{"chainType":"XDC","tokenScAddr":"0x0e11710aad67e7427cfbc12c353284c2e335f62c","tokenType":"Erc20","symbol":"PRNT"},{"chainType":"OKB","tokenScAddr":"0x1e4a5963abfd975d8c9021ce480b42188849d41d","tokenType":"Erc20","symbol":"USDT"},{"chainType":"OETH","tokenScAddr":"0x68f180fcce6836688e9084f035309e29bf0a2095","tokenType":"Erc20","symbol":"BTC"},{"chainType":"SOL","tokenScAddr":"0x0000000000000000000000000000000000000000","tokenType":"Erc20","symbol":"SOL"},{"chainType":"BASEETH","tokenScAddr":"0x60a3e35cc302bfa44cb288bc5a4f316fdb1adb42","tokenType":"Erc20","symbol":"EURC"},{"chainType":"ETH","tokenScAddr":"0xdac17f958d2ee523a2206206994597c13d831ec7","tokenType":"Erc20","symbol":"USDT"},{"chainType":"ETH","tokenScAddr":"0x2260fac5e5542a773aa44fbcfedf7c193bc2c599","tokenType":"Erc20","symbol":"BTC"},{"chainType":"ETH","tokenScAddr":"0x1abaea1f7c830bd89acc67ec4af516284b1bc33c","tokenType":"Erc20","symbol":"EURC"},{"chainType":"BNB","tokenScAddr":"0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d","tokenType":"Erc20","symbol":"USDC"},{"chainType":"ETH","tokenScAddr":"0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48","tokenType":"Erc20","symbol":"USDC"},{"chainType":"BLASTETH","tokenScAddr":"0x0000000000000000000000000000000000000000","tokenType":"Erc20","symbol":"ETH"},{"chainType":"AVAX","tokenScAddr":"0xf197ffc28c23e0309b5559e7a166f2c6164c80aa","tokenType":"Erc20","symbol":"MXNB"},{"chainType":"MATIC","tokenScAddr":"0x3c499c542cef5e3811e1192ce70d8cc03d5c3359","tokenType":"Erc20","symbol":"USDC"},{"chainType":"METIS","tokenScAddr":"0xbb06dca3ae6887fabf931640f67cab3e3a16f4dc","tokenType":"Erc20","symbol":"USDT"},{"chainType":"ASTR","tokenScAddr":"0xffffffff000000000000000000000001000007c0","tokenType":"Erc20","symbol":"USDT"},{"chainType":"VC","tokenScAddr":"0x0000000000000000000000000000000000000000","tokenType":"Erc20","symbol":"VC"},{"chainType":"ARETH","tokenScAddr":"0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9","tokenType":"Erc20","symbol":"USDT"},{"chainType":"MATIC","tokenScAddr":"0xc2132d05d31c914a87c6611c10748aeb04b58e8f","tokenType":"Erc20","symbol":"USDT"},{"chainType":"VC","tokenScAddr":"0x00c1e515ea9579856304198efb15f525a0bb50f6","tokenType":"Erc20","symbol":"VINU"},{"chainType":"OETH","tokenScAddr":"0x0000000000000000000000000000000000000000","tokenType":"Erc20","symbol":"ETH"},{"chainType":"ADA","tokenScAddr":"0x31643766333362643233643835653161323564383764383666616334663139396333313937613266376166656236363261306633346531652e3737366637323663363436643666363236393663363537343666366236353665","tokenType":"Erc20","symbol":"776f726c646d6f62696c65746f6b656e"},{"chainType":"BNB","tokenScAddr":"0xfebe8c1ed424dbf688551d4e2267e7a53698f0aa","tokenType":"Erc20","symbol":"VINU"},{"chainType":"SOL","tokenScAddr":"0x487a7771624b5a773848784d4e3662463279465a4e7268743363326958587p4KcFu7uBEDKtr","tokenType":"Erc20","symbol":"EURC"},{"chainType":"AVAX","tokenScAddr":"0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab","tokenType":"Erc20","symbol":"ETH"},{"chainType":"ADA","tokenScAddr":"0x31306134396239393665323430323236396166353533613861393666623865623930643739653965636137396532623432323330353762362e3437343535323466","tokenType":"Erc20","symbol":"4745524f"},{"chainType":"ADA","tokenScAddr":"0x36643036353730646464373738656337633063636130396433383165636131393465393063386366666137353832383739373335646264652e353834353532","tokenType":"Erc20","symbol":"584552"},{"chainType":"ADA","tokenScAddr":"0x31666332316339633764663364656361313664363939623264353463663561613437373537366164633435663763313334303133386131392e34333431353234343533","tokenType":"Erc20","symbol":"4341524453"},{"chainType":"METIS","tokenScAddr":"0x420000000000000000000000000000000000000a","tokenType":"Erc20","symbol":"ETH"},{"chainType":"SEI","tokenScAddr":"0xe15fc38f6d8c56af07bbcbe3baf5708a2bf42392","tokenType":"Erc20","symbol":"USDC"},{"chainType":"ADA","tokenScAddr":"0x39656165643366393966356339646131363935616361663235343263643662396633656631386262663934646433663737643137663963622e3534343134343431","tokenType":"Erc20","symbol":"54414441"},{"chainType":"TRX","tokenScAddr":"0x3487b63d30b5b2c87fb7ffa8bcfade38eaac1abe","tokenType":"Erc20","symbol":"USDC"},{"chainType":"BNB","tokenScAddr":"0x0000000000000000000000000000000000000000","tokenType":"Erc20","symbol":"BNB"},{"chainType":"ARETH","tokenScAddr":"0xf197ffc28c23e0309b5559e7a166f2c6164c80aa","tokenType":"Erc20","symbol":"MXNB"},{"chainType":"BNB","tokenScAddr":"0x55d398326f99059ff775485246999027b3197955","tokenType":"Erc20","symbol":"USDT"},{"chainType":"XDC","tokenScAddr":"0xfa2958cb79b0491cc627c1557f441ef849ca8eb1","tokenType":"Erc20","symbol":"USDC"},{"chainType":"BNB","tokenScAddr":"0x7130d2a12b9bcbfae4f2634d864a1ee1ce3ead9c","tokenType":"Erc20","symbol":"BTC"},{"chainType":"ETH","tokenScAddr":"0xd1ba9bac957322d6e8c07a160a3a8da11a0d2867","tokenType":"Erc20","symbol":"HMT"},{"chainType":"ETH","tokenScAddr":"0xeaa260c1d247135cec29ec10fb6acedf2a55dc6b","tokenType":"Erc20","symbol":"54414441"},{"chainType":"AVAX","tokenScAddr":"0x152b9d0fdc40c096757f570a51e494bd4b943e50","tokenType":"Erc20","symbol":"BTC"},{"chainType":"BASEETH","tokenScAddr":"0xcbada732173e39521cdbe8bf59a6dc85a9fc7b8c","tokenType":"Erc20","symbol":"ADA"},{"chainType":"MATIC","tokenScAddr":"0xc748b2a084f8efc47e086ccddd9b7e67aeb571bf","tokenType":"Erc20","symbol":"HMT"},{"chainType":"ARETH","tokenScAddr":"0x0000000000000000000000000000000000000000","tokenType":"Erc20","symbol":"ETH"},{"chainType":"OKB","tokenScAddr":"0x74b7f16337b8972027f6196a17a631ac6de26d22","tokenType":"Erc20","symbol":"USDC"},{"chainType":"BNB","tokenScAddr":"0x9f402f44684574f3535ea6f1bb5cfbffef42ee28","tokenType":"Erc20","symbol":"PRNT"},{"chainType":"OPBNB","tokenScAddr":"0x7c6b91d9be155a6db01f749217d76ff02a7227f2","tokenType":"Erc20","symbol":"BTC"},{"chainType":"S","tokenScAddr":"0x29219dd400f2bf60e5a23d13be72b486d4038894","tokenType":"Erc20","symbol":"USDC"},{"chainType":"ETH","tokenScAddr":"0xfecf60cc47509e842d28f737377d48bc70ca7b6f","tokenType":"Erc20","symbol":"4341524453"},{"chainType":"BASEETH","tokenScAddr":"0x833589fcd6edb6e08f4c7c32d4f71b54bda02913","tokenType":"Erc20","symbol":"USDC"},{"chainType":"METIS","tokenScAddr":"0xea32a96608495e54156ae48931a7c20f0dcc1a21","tokenType":"Erc20","symbol":"USDC"},{"chainType":"BNB","tokenScAddr":"0x0c8382719ef242cae2247e4decb2891fbf699818","tokenType":"Erc20","symbol":"BDCA"},{"chainType":"ETH","tokenScAddr":"0x977f7001815cf13ed1f0548ec68bec4ea561e3d6","tokenType":"Erc20","symbol":"4745524f"},{"chainType":"SOL","tokenScAddr":"0x646f67317669776262327657447045523546724a3459464736677136587579466f6855653954584e363575","tokenType":"Erc20","symbol":"DOG"},{"chainType":"BASEETH","tokenScAddr":"0x0000000000000000000000000000000000000000","tokenType":"Erc20","symbol":"ETH"},{"chainType":"BNB","tokenScAddr":"0x1af3f329e8be154074d8769d1ffa4ee058b1dbc3","tokenType":"Erc20","symbol":"DAI"},{"chainType":"SOL","tokenScAddr":"0x457339764d46727a614345526d4a667246344832465944344b436f4e6b5931314d6343653842656e774e5942","tokenType":"Erc20","symbol":"USDT"},{"chainType":"OETH","tokenScAddr":"0x94b008aa00579c1307b0ef2c499ad98a8ce58e58","tokenType":"Erc20","symbol":"USDT"},{"chainType":"BNB","tokenScAddr":"0x2170ed0880ac9a755fd29b2688956bd959f933f8","tokenType":"Erc20","symbol":"ETH"},{"chainType":"BTC","tokenScAddr":"0x0000000000000000000000000000000000000000","tokenType":"Erc20","symbol":"BTC"},{"chainType":"ETH","tokenScAddr":"0xafcdd4f666c84fed1d8bd825aa762e3714f652c9","tokenType":"Erc20","symbol":"VINU"},{"chainType":"ARETH","tokenScAddr":"0xda10009cbd5d07dd0cecc66161fc93d7c9000da1","tokenType":"Erc20","symbol":"DAI"},{"chainType":"BNB","tokenScAddr":"0xeb986da994e4a118d5956b02d8b7c3c7ce373674","tokenType":"Erc20","symbol":"GTH"},{"chainType":"ARETH","tokenScAddr":"0xff970a61a04b1ca14834a43f5de4533ebddb5cc8","tokenType":"Erc20","symbol":"USDC"},{"chainType":"WORLDETH","tokenScAddr":"0x79a02482a880bce3f13e09da970dc34db4cd24d1","tokenType":"Erc20","symbol":"USDC"},{"chainType":"AVAX","tokenScAddr":"0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7","tokenType":"Erc20","symbol":"USDT"},{"chainType":"0G","tokenScAddr":"0xdc3ab620dde7b206b421dcbad5ff286f7b3a0a9e","tokenType":"Erc20","symbol":"GIMO"},{"chainType":"ARETH","tokenScAddr":"0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f","tokenType":"Erc20","symbol":"BTC"},{"chainType":"VET","tokenScAddr":"0x0000000000000000000000000000000000000000","tokenType":"Erc20","symbol":"VET"},{"chainType":"BNB","tokenScAddr":"0x3ee2200efb3400fabb9aacf31297cbdd1d435d47","tokenType":"Erc20","symbol":"ADA"},{"chainType":"ADA","tokenScAddr":"0x37333034383139646366626638616537326335353637386531373761376635653639653031396430626335663633363635363135613264632e363934333638363137323663","tokenType":"Erc20","symbol":"69436861726c"},{"chainType":"OETH","tokenScAddr":"0xda10009cbd5d07dd0cecc66161fc93d7c9000da1","tokenType":"Erc20","symbol":"DAI"},{"chainType":"OETH","tokenScAddr":"0x0b2c639c533813f4aa9d7837caf62653d097ff85","tokenType":"Erc20","symbol":"USDC"},{"chainType":"ADA","tokenScAddr":"0x39376262623764623062616566383963616566636536316238313037616337346337613733343031363662333964393036663137346265632e35343631366336663733","tokenType":"Erc20","symbol":"54616c6f73"},{"chainType":"AVAX","tokenScAddr":"0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e","tokenType":"Erc20","symbol":"USDC"},{"chainType":"OPBNB","tokenScAddr":"0xe7798f023fc62146e8aa1b36da45fb70855a77ea","tokenType":"Erc20","symbol":"ETH"},{"chainType":"ETH","tokenScAddr":"0x6c3ea9036406852006290770bedfcaba0e23a0e8","tokenType":"Erc20","symbol":"PYUSD"}];
+        const CHAIN_CONFIG = [{"chainType":"MOVR","chainID":"1073741825","chainName":"Moonriver","chainSymbol":"MOVR","chainDecimals":18,"transChainID":"1285","crossScAddr":"0xdE1Ae3c465354f01189150f3836C7C15A1d6671D","multicallAddr":"0xaef00a0cf402d9dedd54092d9ca179be6f9e5ce3","chainCoingeckoID":"moonriver"},{"chainType":"ARETH","chainID":"1073741826","chainName":"Arbitrum","chainSymbol":"ETH","chainDecimals":18,"transChainID":"42161","crossScAddr":"0xF7Ba155556E2CD4Dfe3Fe26e506A14d2f4b97613","multicallAddr":"0x80C7DD17B01855a6D2347444a0FCC36136a314de","wanCctpV2Addr":"0x65f17bBFb1c2B8eF9165e2F936122b6d88106CC5","cctpDomain":"3","chainCoingeckoID":"ethereum"},{"chainType":"GLMR","chainID":"1073741828","chainName":"Moonbeam","chainSymbol":"GLMR","chainDecimals":18,"transChainID":"1284","crossScAddr":"0x6372aEc6263AA93EAceDC994D38aa9117B6b95B5","multicallAddr":"0x6477204e12a7236b9619385ea453f370ad897bb2","chainCoingeckoID":"moonbeam"},{"chainType":"FX","chainID":"1073741830","chainName":"f(x)Core","chainSymbol":"FX","chainDecimals":18,"transChainID":"530","crossScAddr":"0xdF935552FaC687123C642F589296762B632a9Aaf","multicallAddr":"0x0575344F57a655F9A76f9546D8B53CdECF94EEc9","chainCoingeckoID":"fx-coin"},{"chainType":"METIS","chainID":"1073741834","chainName":"Metis","chainSymbol":"METIS","chainDecimals":18,"transChainID":"1088","crossScAddr":"0xC6Ae1Db6C66d909F7bFEeEb24F9adb8620bf9dbf","multicallAddr":"0xF1C113a6493E51BD546Bcf7693871F6B03c75747","chainCoingeckoID":"metis-token"},{"chainType":"OKB","chainID":"1073741835","chainName":"X Layer","chainSymbol":"OKB","chainDecimals":18,"transChainID":"196","crossScAddr":"0xc21E5553c8dDDf2E4a93E5bEDBaE436d4291F603","multicallAddr":"0xD4B5f10D61916Bd6E0860144a91Ac658dE8a1437","chainCoingeckoID":"okb"},{"chainType":"SGB","chainID":"1073741836","chainName":"Songbird","chainSymbol":"SGB","chainDecimals":18,"transChainID":"19","crossScAddr":"0xc21E5553c8dDDf2E4a93E5bEDBaE436d4291F603","multicallAddr":"0xD4B5f10D61916Bd6E0860144a91Ac658dE8a1437","chainCoingeckoID":"songbird"},{"chainType":"ZKETH","chainID":"1073741837","chainName":"zkSync Era","chainSymbol":"ETH","chainDecimals":18,"transChainID":"324","crossScAddr":"0x102F0ce7a439d51247167D6233A0a44c3f8389a1","multicallAddr":"0xA09655Ab05ae915bD60775233Ec0669f9bFd3b37","chainCoingeckoID":"ethereum"},{"chainType":"MATICETH","chainID":"1073741838","chainName":"Polygon zkEvm","chainSymbol":"ETH","chainDecimals":18,"transChainID":"1101","crossScAddr":"0xB13aFe3e965DcD483022b1CC3Adf03Eea039A754","multicallAddr":"0xB3C52Ff7721d548e27F7218013A2e98dfEeb3ec0","chainCoingeckoID":"ethereum"},{"chainType":"VC","chainID":"1073741840","chainName":"VinuChain","chainSymbol":"VC","chainDecimals":18,"transChainID":"207","crossScAddr":"0x72cCF64EE5E2C7629eE4eEe3e6AD6990289178ae","multicallAddr":"0x0D4d2595B1d83AB6110b4291816D62d1417C5A8B","chainCoingeckoID":"vinuchain"},{"chainType":"BASEETH","chainID":"1073741841","chainName":"BASE","chainSymbol":"ETH","chainDecimals":18,"transChainID":"8453","crossScAddr":"0x2715aA7156634256aE75240C2c5543814660CD04","multicallAddr":"0xBe5187C2A7eb776c1CaEeD2C37E7599fb05000D3","wanCctpV2Addr":"0x76C51350705756030c70cCb82EF23345C2a4610E","cctpDomain":"6","chainCoingeckoID":"ethereum"},{"chainType":"LINEAETH","chainID":"1073741842","chainName":"Linea","chainSymbol":"ETH","chainDecimals":18,"transChainID":"59144","crossScAddr":"0xFFB876Bd5Bee99e992cAc826A04396002f5f4a65","multicallAddr":"0x5B0B9D1A58cacb8E3f7Cb72225996fc535530f6B","wanCctpV2Addr":"0xD6965a9b739240dB7ACD36E3AFb2dfe1dAE7c694","cctpDomain":"11","chainCoingeckoID":"ethereum"},{"chainType":"NOBLE","chainID":"1073741844","chainName":"Noble","chainSymbol":"USDC","chainDecimals":6,"transChainID":"","cctpDomain":"4","chainCoingeckoID":"usd-coin"},{"chainType":"OPBNB","chainID":"1073741845","chainName":"opBNB","chainSymbol":"BNB","chainDecimals":18,"transChainID":"204","crossScAddr":"0xd6b24d0867753082e40778ADdB13E462A02689dE","multicallAddr":"0xD29f2607eAf10E5FAa334e40Cf4c0e5813B2Eb88","chainCoingeckoID":"binancecoin"},{"chainType":"BLASTETH","chainID":"1073741846","chainName":"Blast","chainSymbol":"ETH","chainDecimals":18,"transChainID":"81457","crossScAddr":"0xc21E5553c8dDDf2E4a93E5bEDBaE436d4291F603","multicallAddr":"0xD4B5f10D61916Bd6E0860144a91Ac658dE8a1437","chainCoingeckoID":"ethereum"},{"chainType":"DIONE","chainID":"1073741848","chainName":"DIONE","chainSymbol":"DIONE","chainDecimals":18,"transChainID":"153153","crossScAddr":"0xc21E5553c8dDDf2E4a93E5bEDBaE436d4291F603","multicallAddr":"0xD4B5f10D61916Bd6E0860144a91Ac658dE8a1437","chainCoingeckoID":"dione"},{"chainType":"EDX","chainID":"1073741850","chainName":"edeXa","chainSymbol":"EDX","chainDecimals":18,"transChainID":"5424","crossScAddr":"0xc21E5553c8dDDf2E4a93E5bEDBaE436d4291F603","multicallAddr":"0xD4B5f10D61916Bd6E0860144a91Ac658dE8a1437"},{"chainType":"WATER","chainID":"1073741851","chainName":"Waterfall","chainSymbol":"WATER","chainDecimals":18,"transChainID":"181","crossScAddr":"0xc21E5553c8dDDf2E4a93E5bEDBaE436d4291F603","multicallAddr":"0xD4B5f10D61916Bd6E0860144a91Ac658dE8a1437"},{"chainType":"SHIDO","chainID":"1073741856","chainName":"Shido","chainSymbol":"SHIDO","chainDecimals":18,"transChainID":"9008","crossScAddr":"0xc21E5553c8dDDf2E4a93E5bEDBaE436d4291F603","multicallAddr":"0xD4B5f10D61916Bd6E0860144a91Ac658dE8a1437","chainCoingeckoID":"shido-2"},{"chainType":"WORLDETH","chainID":"1073741857","chainName":"WorldChain","chainSymbol":"ETH","chainDecimals":18,"transChainID":"480","crossScAddr":"0x41B0AD2cC2c56950C52E7E34c4fFd6D9C4361284","multicallAddr":"0xf94145caf4f93d2aB1284EA6324C520c85827bcf","wanCctpV2Addr":"0x79d745178BC271A1f29F8fbE9251dfC512db842C","cctpDomain":"14","chainCoingeckoID":"ethereum"},{"chainType":"UNIETH","chainID":"1073741858","chainName":"UniChain","chainSymbol":"ETH","chainDecimals":18,"transChainID":"130","crossScAddr":"0x9C11539603661b6c90E65E96Aa8aC4B8E4b914c8","multicallAddr":"0x149180976accE60cED0A9c339853C9D1d4160765","wanCctpV2Addr":"0x22C835B306916ec6cb3568e7ffD61bF821Ed593d","cctpDomain":"10","chainCoingeckoID":"ethereum"},{"chainType":"0G","chainID":"1073741859","chainName":"0G Network","chainSymbol":"0G","chainDecimals":18,"transChainID":"16661","crossScAddr":"0x14CA89ac9Cd73B01Bf71a3aF3f8cf8fd224d6A1d","multicallAddr":"0x149180976accE60cED0A9c339853C9D1d4160765","chainCoingeckoID":"zero-gravity"},{"chainType":"BTC","chainID":"2147483648","chainName":"Bitcoin","chainSymbol":"BTC","chainDecimals":8,"transChainID":"","chainCoingeckoID":"bitcoin"},{"chainType":"LTC","chainID":"2147483650","chainName":"Litecoin","chainSymbol":"LTC","chainDecimals":8,"transChainID":"","chainCoingeckoID":"litecoin"},{"chainType":"DOGE","chainID":"2147483651","chainName":"Dogecoin","chainSymbol":"DOGE","chainDecimals":8,"transChainID":"","chainCoingeckoID":"dogecoin"},{"chainType":"ETH","chainID":"2147483708","chainName":"Ethereum","chainSymbol":"ETH","chainDecimals":18,"transChainID":"1","crossScAddr":"0xfCeAAaEB8D564a9D0e71Ef36f027b9D162bC334e","multicallAddr":"0x5ba1e12693dc8f9c48aad8770482f4739beed696","wanCctpV2Addr":"0x4bF9D67a254bD7C8E4a164e8363FFEDeC4128444","cctpDomain":"0","chainCoingeckoID":"ethereum"},{"chainType":"XRP","chainID":"2147483792","chainName":"XRPL","chainSymbol":"XRP","chainDecimals":6,"transChainID":"","chainCoingeckoID":"ripple"},{"chainType":"EOS","chainID":"2147483842","chainName":"EOS","chainSymbol":"EOS","chainDecimals":4,"transChainID":"","chainCoingeckoID":"eos"},{"chainType":"TRX","chainID":"2147483843","chainName":"Tron","chainSymbol":"TRX","chainDecimals":6,"transChainID":"","crossScAddr":"TZ9grqg3LwBKiddGra3WGHPdddJz3tow8N","multicallAddr":"TQKEEceZoa8sn8XKvDZeRRWFApfK2fuTGB","chainCoingeckoID":"tron"},{"chainType":"ALGO","chainID":"2147483931","chainName":"Algorand","chainSymbol":"ALGO","chainDecimals":6,"transChainID":"416001","chainCoingeckoID":"algorand"},{"chainType":"DOT","chainID":"2147484002","chainName":"Polkadot","chainSymbol":"DOT","chainDecimals":10,"transChainID":"","chainCoingeckoID":"polkadot"},{"chainType":"KAVA","chainID":"2147484107","chainName":"Kava","chainSymbol":"KAVA","chainDecimals":6,"transChainID":"","chainCoingeckoID":"kava"},{"chainType":"SOL","chainID":"2147484149","chainName":"Solana","chainSymbol":"SOL","chainDecimals":9,"transChainID":"","chainCoingeckoID":"solana"},{"chainType":"XDC","chainID":"2147484198","chainName":"XinFin.Network","chainSymbol":"XDC","chainDecimals":18,"transChainID":"50","crossScAddr":"0xf7ba155556e2cd4dfe3fe26e506a14d2f4b97613","multicallAddr":"0x0575344F57a655F9A76f9546D8B53CdECF94EEc9","wanCctpV2Addr":"0x77E3695C26FF538B4dB9593B20620b73D00c7059","cctpDomain":"18","chainCoingeckoID":"xdce-crowd-sale"},{"chainType":"OETH","chainID":"2147484262","chainName":"OP Mainnet","chainSymbol":"ETH","chainDecimals":18,"transChainID":"10","crossScAddr":"0xC6Ae1Db6C66d909F7bFEeEb24F9adb8620bf9dbf","multicallAddr":"0xeaa6877139d436dc6d1f75f3af15b74662617b2c","wanCctpV2Addr":"0xf5db314d1Bb8e6166a2b54B057dCa934ac3b5d43","cctpDomain":"2","chainCoingeckoID":"ethereum"},{"chainType":"BNB","chainID":"2147484362","chainName":"BSC","chainSymbol":"BNB","chainDecimals":18,"transChainID":"56","crossScAddr":"0xc3711Bdbe7E3063Bf6c22e7feD42F782Ac82bAEE","multicallAddr":"0x98194aaA67638498547Df929DF4926C7D0DCD135","chainCoingeckoID":"binancecoin"},{"chainType":"SUI","chainID":"2147484432","chainName":"Sui","chainSymbol":"SUI","chainDecimals":9,"transChainID":"","cctpDomain":"8","chainCoingeckoID":"sui"},{"chainType":"ASTR","chainID":"2147484458","chainName":"Astar","chainSymbol":"ASTR","chainDecimals":18,"transChainID":"592","crossScAddr":"0x592dE30Bebff484B5a43A6E8E3ec1a814902E0b6","multicallAddr":"0xb023f2D496A04c5Af9cd1214924B0Fb19397e3fA","chainCoingeckoID":"astar"},{"chainType":"VET","chainID":"2147484466","chainName":"VeChain","chainSymbol":"VET","chainDecimals":18,"transChainID":"100009","crossScAddr":"0xfb37aee0ebfbd3929923d1366ba30df037e9e47c","multicallAddr":"0xfc061da2e19334675721b2f7f7c8caba0ae2abd7","chainCoingeckoID":"vechain"},{"chainType":"MATIC","chainID":"2147484614","chainName":"Polygon","chainSymbol":"MATIC","chainDecimals":18,"transChainID":"137","crossScAddr":"0x2216072A246A84f7b9CE0f1415Dd239C9bF201aB","multicallAddr":"0x275617327c958bD06b5D6b871E7f491D76113dd8","wanCctpV2Addr":"0xC702c95612cd70B0440571DD7FA9c7B3057C152B","cctpDomain":"7","chainCoingeckoID":"polygon-ecosystem-token"},{"chainType":"TLOS","chainID":"2147484625","chainName":"Telos","chainSymbol":"TLOS","chainDecimals":18,"transChainID":"40","crossScAddr":"0x201E5dE97DFc46aAce142B2009332c524c9D8D82","multicallAddr":"0xcA11bde05977b3631167028862bE2a173976CA11","chainCoingeckoID":"telos"},{"chainType":"FTM","chainID":"2147484655","chainName":"Fantom","chainSymbol":"FTM","chainDecimals":18,"transChainID":"250","crossScAddr":"0xCcffE9d337f3c1b16bd271D109e691246fD69ee3","multicallAddr":"0xD98e3dBE5950Ca8Ce5a4b59630a5652110403E5c","chainCoingeckoID":"sonic-3"},{"chainType":"ADA","chainID":"2147485463","chainName":"Cardano","chainSymbol":"ADA","chainDecimals":6,"transChainID":"","chainCoingeckoID":"cardano"},{"chainType":"AVAX","chainID":"2147492648","chainName":"Avalanche C-Chain","chainSymbol":"AVAX","chainDecimals":18,"transChainID":"43114","crossScAddr":"0x74e121a34a66D54C33f3291f2cdf26B1cd037c3a","multicallAddr":"0x0575344F57a655F9A76f9546D8B53CdECF94EEc9","wanCctpV2Addr":"0x1342FE3Ff6Fe8B701d8067AE83A37d10bEc7aB1b","cctpDomain":"1","chainCoingeckoID":"avalanche-2"},{"chainType":"NRG","chainID":"2147493445","chainName":"Energi","chainSymbol":"NRG","chainDecimals":18,"transChainID":"39797","crossScAddr":"0xBe5187C2A7eb776c1CaEeD2C37E7599fb05000D3","multicallAddr":"0x1eD3538383BBFDB80343B18F85D6c5A5Fb232fb6","chainCoingeckoID":"energi"},{"chainType":"S","chainID":"2147493655","chainName":"Sonic","chainSymbol":"S","chainDecimals":18,"transChainID":"146","crossScAddr":"0x14CA89ac9Cd73B01Bf71a3aF3f8cf8fd224d6A1d","multicallAddr":"0x149180976accE60cED0A9c339853C9D1d4160765","wanCctpV2Addr":"0x508927b6247179D72142B60Fc69f5E4d58cbEb64","cctpDomain":"13","chainCoingeckoID":"sonic-3"},{"chainType":"CELO","chainID":"2147536400","chainName":"Celo","chainSymbol":"CELO","chainDecimals":18,"transChainID":"42220","crossScAddr":"0x14CA89ac9Cd73B01Bf71a3aF3f8cf8fd224d6A1d","multicallAddr":"0x149180976accE60cED0A9c339853C9D1d4160765","chainCoingeckoID":"celo"},{"chainType":"WAN","chainID":"2153201998","chainName":"Wanchain","chainSymbol":"WAN","chainDecimals":18,"transChainID":"888","crossScAddr":"0xe85b0D89CbC670733D6a40A9450D8788bE13da47","multicallAddr":"0x0575344F57a655F9A76f9546D8B53CdECF94EEc9","chainCoingeckoID":"wanchain"},{"chainType":"SEI","chainID":"2166483766","chainName":"Sei","chainSymbol":"SEI","chainDecimals":18,"transChainID":"1329","crossScAddr":"0x14CA89ac9Cd73B01Bf71a3aF3f8cf8fd224d6A1d","multicallAddr":"0x149180976accE60cED0A9c339853C9D1d4160765","wanCctpV2Addr":"0xDd8830d9454365a3b81d0EC6F4272AE5337795bb","cctpDomain":"16","chainCoingeckoID":"sei-network"}];
 
-        const defaultCsvHeaders = ['id', 'smg', 'token_name', 'token_pair_id', 'from_chain', 'to_chain', 'bridge_type', 'from_chain_slip44_id', 'to_chain_slip44_id', 'from_token_address', 'to_token_address', 'from_token_decimals', 'to_token_decimals', 'network_fee', 'network_fee_asset', 'minServiceFee(wei)', 'cross_amount(eth)'];
+        const defaultCsvHeaders = ['id', 'smg', 'token_name', 'token_pair_id', 'from_chain', 'to_chain', 'bridge_type', 'from_coin_decimals', 'required_native_coin(wei)', 'to_address', 'from_chain_slip44_id', 'to_chain_slip44_id', 'from_token_address', 'to_token_address', 'from_token_decimals', 'to_token_decimals', 'network_fee', 'network_fee_asset', 'minServiceFee(wei)', 'cross_amount(eth)'];
         const evmHeadersSet = ['from_coin_decimals', 'cross_amount(eth)', 'required_native_coin(wei)', 'to_address', 'bridge_type'];
         const cardanoHeadersSet = ['bridge_type', 'cross_type', 'cross_amount(eth)', 'to_address', 'required_token(wei)', 'required_ada'];
         const allRecognizedHeaders = [...new Set([...defaultCsvHeaders, ...evmHeadersSet, ...cardanoHeadersSet])];
@@ -224,6 +227,11 @@
                 return 'USER_TOKEN_LOCK';
             }
             return 'USER_TOKEN_BURN';
+        };
+
+        const getChainDecimals = (chainType) => {
+            const match = CHAIN_CONFIG.find(c => c.chainType === chainType);
+            return match ? match.chainDecimals : '';
         };
 
         async function getQuotaAndFee(f, t, id, symbol, boxId) {
@@ -479,6 +487,9 @@
                     token_pair_id: p.tokenPairID,
                     from_chain: p.fromChain.chainName,
                     to_chain: p.toChain.chainName,
+                    from_coin_decimals: getChainDecimals(p.fromChain.chainType),
+                    'required_native_coin(wei)': p['required_native_coin(wei)'] || '',
+                    to_address: p.to_address || '',
                     from_chain_slip44_id: p.fromChain.slip44ChainID,
                     to_chain_slip44_id: p.toChain.slip44ChainID,
                     from_token_address: p.fromToken.address,
@@ -525,6 +536,7 @@
                     }
                 }
             });
+            csvHeaders = [...new Set(csvHeaders)]; // Double check uniqueness
             if (headersAdded) renderCsvHeaders();
 
             for (const rowStr of dataRows) {
@@ -561,19 +573,33 @@
 
         function addCsvHeader() {
             const val = document.getElementById('newHeaderInput').value.trim();
-            if (val) { val.split(',').forEach(h => { if(!csvHeaders.includes(h.trim())) csvHeaders.push(h.trim()); }); renderCsvHeaders(); renderSelectedPairs(); }
+            if (val) {
+                val.split(',').forEach(h => {
+                    const trimmed = h.trim();
+                    if(trimmed && !csvHeaders.includes(trimmed)) csvHeaders.push(trimmed);
+                });
+                csvHeaders = [...new Set(csvHeaders)]; // Ensure unique
+                renderCsvHeaders();
+                renderSelectedPairs();
+            }
             document.getElementById('newHeaderInput').value = '';
         }
-        function addEvmHeaders() { evmHeadersSet.forEach(h => { if(!csvHeaders.includes(h)) csvHeaders.push(h); }); renderCsvHeaders(); renderSelectedPairs(); }
-        function addCardanoHeaders() { cardanoHeadersSet.forEach(h => { if(!csvHeaders.includes(h)) csvHeaders.push(h); }); renderCsvHeaders(); renderSelectedPairs(); }
+        function addEvmHeaders() { csvHeaders = [...new Set([...csvHeaders, ...evmHeadersSet])]; renderCsvHeaders(); renderSelectedPairs(); }
+        function addCardanoHeaders() { csvHeaders = [...new Set([...csvHeaders, ...cardanoHeadersSet])]; renderCsvHeaders(); renderSelectedPairs(); }
         function resetCsvHeaders() { csvHeaders = [...defaultCsvHeaders]; renderCsvHeaders(); renderSelectedPairs(); }
-        function renderCsvHeaders() { document.getElementById('csvHeadersContainer').innerHTML = csvHeaders.map(h => `<div class="header-pill">${h}<button onclick="csvHeaders=csvHeaders.filter(x=>x!=='${h}');renderCsvHeaders();renderSelectedPairs();">✕</button></div>`).join(''); }
+        function renderCsvHeaders() {
+            csvHeaders = [...new Set(csvHeaders)]; // Always ensure uniqueness before rendering
+            document.getElementById('csvHeadersContainer').innerHTML = csvHeaders.map(h => `<div class="header-pill">${h}<button onclick="csvHeaders=csvHeaders.filter(x=>x!=='${h}');renderCsvHeaders();renderSelectedPairs();">✕</button></div>`).join('');
+        }
         function generateCSV() {
             let csv = csvHeaders.join(',') + '\n';
             selectedPairsData.forEach((p, idx) => {
                 const row = {
                     id: idx + 1, smg: p.smg_raw || rawSmgID, token_name: getDisplayName(p.symbol), token_pair_id: p.tokenPairID,
                     from_chain: p.fromChain.chainName, to_chain: p.toChain.chainName,
+                    from_coin_decimals: getChainDecimals(p.fromChain.chainType),
+                    'required_native_coin(wei)': p['required_native_coin(wei)'] || '',
+                    to_address: p.to_address || '',
                     from_chain_slip44_id: p.fromChain.slip44ChainID, to_chain_slip44_id: p.toChain.slip44ChainID,
                     from_token_address: p.fromToken.address, to_token_address: p.toToken.address, from_token_decimals: p.fromToken.decimals, to_token_decimals: p.toToken.decimals,
                     network_fee: p.network_fee, network_fee_asset: p.fromChain.chainType, 'minServiceFee(wei)': p['minServiceFee(wei)'],
